@@ -11,6 +11,27 @@
 
 ## 2026-05-23
 
+### DS Interviewer 음성 질문 UI 정적 검증
+
+#### 범위
+
+- 개별 연습 질문 텍스트 기본 숨김
+- 모의고사 질문 텍스트 기본 숨김
+- 브라우저 음성 합성 질문 재생
+- 모의고사 문항당 질문 듣기 2회 제한
+- 관련 문서 동기화
+
+#### 결과
+
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Fixed: `public/ds-interviewer.webp` 이미지 자산을 추가했고, 원본 PNG 대비 용량을 줄였다.
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not run: 브라우저에서 실제 질문 음성 재생, 텍스트 보기, 모의고사 듣기 제한을 수동 확인해야 한다.
+
 ### 모의고사 타이밍 UX 정적 검증
 
 #### 범위
