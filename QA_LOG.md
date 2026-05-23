@@ -11,22 +11,43 @@
 
 ## 2026-05-23
 
-### 범위
+### 모의고사 타이밍 UX 정적 검증
+
+#### 범위
+
+- 전체 남은 시간 경고 UI
+- 현재 문항 경과 시간과 권장 답변 시간 표시
+- 문항별 소요 시간 저장 필드
+- 관련 문서 동기화
+
+#### 결과
+
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not run: 브라우저에서 실제 타이머 증가, 문항 이동 후 초기화, 5분/1분 경고 표시를 수동으로 확인해야 한다.
+
+### 학습 경로 MVP 정적 검증
+
+#### 범위
 
 - 학습 경로 MVP 구현 후 정적 검증
 - 빌드 및 lint 명령 확인
 - 로컬 개발 서버 응답 확인
 
-### 결과
+#### 결과
 
 - `rtk npm run build`: Pass
 - `rtk npm run lint`: Pass with warning
 - `http://127.0.0.1:3000`: HTTP 200
 
-### 발견 이슈
+#### 발견 이슈
 
 - Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
 
-### 비고
+#### 비고
 
 - 이번 기록은 자동/정적 검증 중심이다. 브라우저에서 실제 클릭 플로우를 확인하는 수동 QA는 아직 별도로 수행하지 않았다.
