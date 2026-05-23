@@ -396,6 +396,39 @@ button:disabled {
   font-size: 24px;
 }
 
+.timer.warning {
+  background: #fff7ed;
+  border-color: #fed7aa;
+}
+
+.timer.warning strong {
+  color: var(--warning);
+}
+
+.timer.critical {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.timer.critical strong {
+  color: #b91c1c;
+}
+
+.time-alert {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  color: var(--warning);
+  margin: 10px 0 0;
+  padding: 10px 12px;
+}
+
+.time-alert.critical {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
 .feedback {
   border-left: 4px solid var(--accent);
   padding-left: 14px;

@@ -1003,6 +1003,7 @@ function MockView({
   const [transcript, setTranscript] = useState("");
   const [answers, setAnswers] = useState<MockExamAnswer[]>([]);
   const [remainingSeconds, setRemainingSeconds] = useState(40 * 60);
+  const [questionElapsedSeconds, setQuestionElapsedSeconds] = useState(0);
   const [report, setReport] = useState<MockExamReport | null>(null);
   const [provider, setProvider] = useState<"gemini" | "local" | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -1014,6 +1015,10 @@ function MockView({
     [settings],
   );
   const currentQuestion = mockQuestions[currentIndex];
+  const isOverallTimeWarning = remainingSeconds <= 5 * 60;
+  const isOverallTimeCritical = remainingSeconds <= 60;
+  const isQuestionOverRecommendedTime =
+    currentQuestion && questionElapsedSeconds > currentQuestion.answerTimeSec;
 
   useEffect(() => {
     if (phase !== "running") {
@@ -1021,6 +1026,7 @@ function MockView({
     }
 
     const timer = window.setInterval(() => {
+      setQuestionElapsedSeconds((current) => current + 1);
       setRemainingSeconds((current) => {
         if (current <= 1) {
           window.clearInterval(timer);
@@ -1040,6 +1046,7 @@ function MockView({
     setCurrentIndex(0);
     setTranscript("");
     setRemainingSeconds(40 * 60);
+    setQuestionElapsedSeconds(0);
     setReport(null);
     setProvider(null);
     setError(null);
@@ -1068,6 +1075,7 @@ function MockView({
     }
 
     setCurrentIndex(currentIndex + 1);
+    setQuestionElapsedSeconds(0);
   }
 
   function appendCurrentAnswer(
@@ -1081,6 +1089,7 @@ function MockView({
         prompt: currentQuestion.prompt,
         transcript: answerTranscript,
         metrics: measureTranscript(answerTranscript, currentQuestion.answerTimeSec),
+        elapsedSeconds: questionElapsedSeconds,
         isWarmup: currentIndex === 0,
       },
     ];
@@ -1098,6 +1107,7 @@ function MockView({
     }
 
     setCurrentIndex(currentIndex + 1);
+    setQuestionElapsedSeconds(0);
   }
 
   async function endExamNow() {
@@ -1263,6 +1273,11 @@ function MockView({
                 value={transcript}
               />
               {error && <p className="input-error">{error}</p>}
+              {isQuestionOverRecommendedTime && (
+                <p className="time-alert">
+                  권장 답변 시간을 넘었습니다. 핵심 문장을 마무리하고 다음 문항으로 이동하세요.
+                </p>
+              )}
               <div className="button-row" style={{ marginTop: 12 }}>
                 <button className="secondary" disabled={isListening} onClick={listenForMockAnswer}>
                   {isListening ? "듣는 중" : "받아쓰기"}
@@ -1280,9 +1295,24 @@ function MockView({
             </article>
           </div>
           <aside className="grid">
-            <div className="timer">
+            <div className={`timer ${isOverallTimeCritical ? "critical" : isOverallTimeWarning ? "warning" : ""}`}>
               <span className="muted">남은 시간</span>
               <strong>{formatSeconds(remainingSeconds)}</strong>
+            </div>
+            {(isOverallTimeWarning || isOverallTimeCritical) && (
+              <div className={`time-alert ${isOverallTimeCritical ? "critical" : ""}`}>
+                {isOverallTimeCritical
+                  ? "남은 시간이 1분 이하입니다. 가능한 답변만 빠르게 마무리하세요."
+                  : "남은 시간이 5분 이하입니다. 답변을 짧게 정리하며 진행하세요."}
+              </div>
+            )}
+            <div className={`timer ${isQuestionOverRecommendedTime ? "warning" : ""}`}>
+              <span className="muted">현재 문항</span>
+              <strong>{formatSeconds(questionElapsedSeconds)}</strong>
+            </div>
+            <div className="timer">
+              <span className="muted">권장 답변</span>
+              <strong>{formatSeconds(currentQuestion.answerTimeSec)}</strong>
             </div>
             <div className="timer">
               <span className="muted">문항</span>

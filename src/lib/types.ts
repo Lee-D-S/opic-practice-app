@@ -100,6 +100,7 @@ export type MockExamAnswer = {
   prompt: string;
   transcript: string;
   metrics: AttemptMetrics;
+  elapsedSeconds?: number;
   isWarmup?: boolean;
 };
 
