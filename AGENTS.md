@@ -21,6 +21,7 @@ Use npm scripts from the repository root:
 - `npm run build` creates a production build and runs Next.js compile checks.
 - `npm run start` serves the production build after `npm run build`.
 - `npm run lint` runs the configured Next.js ESLint rules.
+- `npm test` runs the Vitest unit tests for storage and local report logic.
 
 For Gemini feedback smoke testing, use `scripts/test-gemini-feedback.ps1` after
 creating a local environment file.
@@ -38,11 +39,11 @@ semicolons, and concise helper functions. Keep user-facing UI code in
 
 ## Testing Guidelines
 
-No automated test runner is currently configured. Before submitting changes,
-run `npm run lint` and `npm run build`, then manually verify the relevant OPIC
-practice flow in the browser. Use `TEST_CASES.md` and `QA_CHECKLIST.md` as the
-manual regression checklist. If adding tests later, place them near the code
-they cover and document the new command here.
+Vitest is configured for unit tests. Place tests near the code they cover with
+the `*.test.ts` naming pattern. Before submitting changes, run `npm test`,
+`npm run lint`, and `npm run build`, then manually verify the relevant OPIC
+practice flow in the browser. Use `TEST_CASES.md` and `QA_CHECKLIST.md` for
+manual regression coverage.
 
 ## Commit & Pull Request Guidelines
 

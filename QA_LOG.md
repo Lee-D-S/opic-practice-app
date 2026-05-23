@@ -9,6 +9,28 @@
 - 발견한 문제는 수정 전까지 `Open`, 수정 후에는 `Fixed`로 표시한다.
 - 단순 빌드/린트 검증은 명령과 결과만 짧게 기록한다.
 
+## 2026-05-24
+
+### 자동화 테스트 도입 정적 검증
+
+#### 범위
+
+- Vitest test script
+- storage persistence/fallback unit tests
+- local mock report Q1 warm-up exclusion unit test
+- 관련 문서 동기화
+
+#### 결과
+
+- `rtk npm test`: Pass, 2 files / 7 tests
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not covered: 피드백/비교/모의고사 API route fallback 테스트와 UI 상호작용 테스트는 아직 없다.
+
 ## 2026-05-23
 
 ### 답변 재료 저장 정적 검증

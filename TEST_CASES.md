@@ -236,10 +236,12 @@
 
 단계:
 
-1. `rtk npm run build`를 실행한다.
+1. `rtk npm test`를 실행한다.
+2. `rtk npm run build`를 실행한다.
 
 기대 결과:
 
+- Vitest 단위 테스트가 성공한다.
 - 빌드가 성공한다.
 - TypeScript 검사가 통과한다.
 - API route가 빌드 결과에 포함된다.

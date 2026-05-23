@@ -93,6 +93,7 @@
 
 ## 검증 명령
 
+- [ ] `rtk npm test`가 통과한다.
 - [ ] `rtk npm run build`가 통과한다.
 - [ ] 로컬 앱이 `http://127.0.0.1:3000`에서 응답한다.
 - [ ] 피드백 API가 `Gemini` 또는 `Local fallback`을 반환한다.
