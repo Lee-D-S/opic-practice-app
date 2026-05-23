@@ -11,6 +11,26 @@
 
 ## 2026-05-23
 
+### 답변 재료 저장 정적 검증
+
+#### 범위
+
+- 주제별 이야기/이유/구체 예시 메모 입력
+- 답변 재료 localStorage 저장
+- 최근 저장 시각 표시
+- 답변 재료 정리 단계 완료 연결
+- 관련 문서 동기화
+
+#### 결과
+
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not run: 브라우저에서 실제 저장, 새로고침 후 유지, 단계 완료 연결을 수동 확인해야 한다.
+
 ### DS Interviewer 음성 질문 UI 정적 검증
 
 #### 범위
