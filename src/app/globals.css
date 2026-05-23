@@ -363,6 +363,83 @@ button:disabled {
   margin: 0;
 }
 
+.interviewer-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 180px minmax(0, 1fr);
+  padding: 16px;
+}
+
+.interviewer-portrait {
+  align-self: stretch;
+  background:
+    radial-gradient(circle at 50% 24%, rgba(37, 99, 235, 0.16), transparent 36%),
+    linear-gradient(135deg, #eef2f8, #f8fafc);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 220px;
+  overflow: hidden;
+  position: relative;
+}
+
+.interviewer-portrait::after {
+  color: var(--primary-strong);
+  content: "DS";
+  font-size: 42px;
+  font-weight: 700;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.interviewer-portrait img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.interviewer-content {
+  min-width: 0;
+}
+
+.eyebrow {
+  color: var(--primary-strong);
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  text-transform: uppercase;
+}
+
+.hidden-prompt {
+  align-items: center;
+  background: #f8fafc;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  display: flex;
+  min-height: 92px;
+  padding: 16px;
+}
+
+.transcript-prompt {
+  margin-top: 14px;
+}
+
+.listen-count {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 13px;
+}
+
 .textarea {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -479,6 +556,7 @@ button:disabled {
 @media (max-width: 980px) {
   .app-frame,
   .practice-layout,
+  .interviewer-card,
   .path-summary,
   .path-step,
   .grid.two,

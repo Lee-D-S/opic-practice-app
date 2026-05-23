@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   buildMockExamQuestions,
@@ -50,6 +51,7 @@ type LearningPathAction =
   | "roleplay"
   | "mock"
   | "review";
+type PromptMode = "practice" | "mock";
 
 type SpeechRecognitionLike = {
   lang: string;
@@ -360,6 +362,23 @@ export default function Home() {
     recognition.start();
   }
 
+  function speakPrompt(text: string, onEnd?: () => void) {
+    if (!window.speechSynthesis) {
+      onEnd?.();
+      return false;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.rate = 0.92;
+    utterance.onend = () => onEnd?.();
+    utterance.onerror = () => onEnd?.();
+    window.speechSynthesis.speak(utterance);
+
+    return true;
+  }
+
   return (
     <main className="app-shell">
       <div className="app-frame">
@@ -421,6 +440,7 @@ export default function Home() {
 
           {view === "practice" && (
             <PracticeView
+              key={question.id}
               comparison={comparison}
               feedback={feedback}
               firstTranscript={firstTranscript}
@@ -433,6 +453,7 @@ export default function Home() {
               onSecondTranscript={setSecondTranscript}
               onSubmitFirst={submitFirstAnswer}
               onSubmitSecond={submitSecondAnswer}
+              onSpeakPrompt={speakPrompt}
               question={question}
               provider={provider}
               secondTranscript={secondTranscript}
@@ -445,6 +466,7 @@ export default function Home() {
           {view === "mock" && (
             <MockView
               settings={settings}
+              onSpeakPrompt={speakPrompt}
               onSaved={(result) => setMockResults([result, ...mockResults].slice(0, 20))}
             />
           )}
@@ -728,6 +750,7 @@ function PracticeView({
   onSecondTranscript,
   onSubmitFirst,
   onSubmitSecond,
+  onSpeakPrompt,
   question,
   provider,
   secondTranscript,
@@ -747,6 +770,7 @@ function PracticeView({
   onSecondTranscript: (value: string) => void;
   onSubmitFirst: () => void;
   onSubmitSecond: () => void;
+  onSpeakPrompt: (text: string, onEnd?: () => void) => boolean;
   question: Question;
   provider: "gemini" | "local" | null;
   secondTranscript: string;
@@ -754,6 +778,18 @@ function PracticeView({
   step: PracticeStep;
   setStep: (step: PracticeStep) => void;
 }) {
+  const [isPromptVisible, setIsPromptVisible] = useState(false);
+  const [isPromptSpeaking, setIsPromptSpeaking] = useState(false);
+
+  function playPrompt() {
+    setIsPromptSpeaking(true);
+    const didStart = onSpeakPrompt(question.prompt, () => setIsPromptSpeaking(false));
+
+    if (!didStart) {
+      setIsPromptSpeaking(false);
+    }
+  }
+
   return (
     <section className="panel">
       <div className="section-head">
@@ -766,9 +802,14 @@ function PracticeView({
 
       <div className="practice-layout">
         <div className="grid">
-          <div className="prompt">
-            <p>{question.prompt}</p>
-          </div>
+          <InterviewerPrompt
+            isPromptVisible={isPromptVisible}
+            isSpeaking={isPromptSpeaking}
+            mode="practice"
+            onPlay={playPrompt}
+            onShowPrompt={() => setIsPromptVisible(true)}
+            prompt={question.prompt}
+          />
 
           {step === "ready" && (
             <article className="card">
@@ -913,6 +954,80 @@ function AnswerBox({
   );
 }
 
+function InterviewerPrompt({
+  isPromptVisible,
+  isSpeaking,
+  listenCount,
+  maxListens,
+  mode,
+  onPlay,
+  onShowPrompt,
+  prompt,
+}: {
+  isPromptVisible: boolean;
+  isSpeaking: boolean;
+  listenCount?: number;
+  maxListens?: number;
+  mode: PromptMode;
+  onPlay: () => void;
+  onShowPrompt: () => void;
+  prompt: string;
+}) {
+  const remainingListens =
+    maxListens === undefined || listenCount === undefined
+      ? null
+      : Math.max(maxListens - listenCount, 0);
+
+  return (
+    <article className="interviewer-card">
+      <div className="interviewer-portrait">
+        <Image
+          alt="DS Interviewer"
+          height={260}
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
+          }}
+          src="/ds-interviewer.webp"
+          width={220}
+        />
+      </div>
+      <div className="interviewer-content">
+        <p className="eyebrow">DS Interviewer</p>
+        <h3>질문을 듣고 답변하세요</h3>
+        <p className="muted">
+          {mode === "mock"
+            ? "실전감을 위해 질문 텍스트는 기본적으로 숨겨집니다."
+            : "음성 중심으로 먼저 연습하고, 필요할 때만 질문 텍스트를 확인하세요."}
+        </p>
+        <div className="button-row" style={{ marginTop: 12 }}>
+          <button
+            className="primary"
+            disabled={isSpeaking || remainingListens === 0}
+            onClick={onPlay}
+          >
+            {isSpeaking ? "재생 중" : listenCount ? "다시 듣기" : "질문 듣기"}
+          </button>
+          <button className="secondary" onClick={onShowPrompt}>
+            질문 텍스트 보기
+          </button>
+          {remainingListens !== null && (
+            <span className="listen-count">남은 듣기 {remainingListens}회</span>
+          )}
+        </div>
+        {isPromptVisible ? (
+          <div className="prompt transcript-prompt">
+            <p>{prompt}</p>
+          </div>
+        ) : (
+          <div className="hidden-prompt">
+            질문 텍스트가 숨겨져 있습니다.
+          </div>
+        )}
+      </div>
+    </article>
+  );
+}
+
 function validateAnswer(transcript: string) {
   const words = transcript.match(/[A-Za-z']+/g) ?? [];
   const meaningfulWords = words.filter((word) => word.length > 1);
@@ -992,9 +1107,11 @@ function FeedbackBlock({
 
 function MockView({
   settings,
+  onSpeakPrompt,
   onSaved,
 }: {
   settings: AppSettings;
+  onSpeakPrompt: (text: string, onEnd?: () => void) => boolean;
   onSaved: (result: MockExamResult) => void;
 }) {
   const [phase, setPhase] = useState<"setup" | "orientation" | "running" | "report">("setup");
@@ -1010,6 +1127,9 @@ function MockView({
   const [finishReason, setFinishReason] = useState<"completed" | "ended" | "time" | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [isPromptVisible, setIsPromptVisible] = useState(false);
+  const [isPromptSpeaking, setIsPromptSpeaking] = useState(false);
+  const [promptListenCount, setPromptListenCount] = useState(0);
   const mockQuestions = useMemo(
     () => buildMockExamQuestions(settings.targetLevel, settings.surveyTags),
     [settings],
@@ -1047,6 +1167,9 @@ function MockView({
     setTranscript("");
     setRemainingSeconds(40 * 60);
     setQuestionElapsedSeconds(0);
+    setIsPromptVisible(false);
+    setIsPromptSpeaking(false);
+    setPromptListenCount(0);
     setReport(null);
     setProvider(null);
     setError(null);
@@ -1184,6 +1307,23 @@ function MockView({
     recognition.start();
   }
 
+  function playMockPrompt() {
+    if (promptListenCount >= 2) {
+      setError("모의고사에서는 질문 듣기를 최대 2회까지 사용할 수 있습니다.");
+      return;
+    }
+
+    setError(null);
+    setIsPromptSpeaking(true);
+    setPromptListenCount((current) => current + 1);
+    const didStart = onSpeakPrompt(currentQuestion.prompt, () => setIsPromptSpeaking(false));
+
+    if (!didStart) {
+      setIsPromptSpeaking(false);
+      setError("이 브라우저는 질문 음성 재생을 지원하지 않습니다. 질문 텍스트 보기를 사용해 주세요.");
+    }
+  }
+
   return (
     <section className="panel">
       <div className="section-head">
@@ -1256,9 +1396,16 @@ function MockView({
       {phase === "running" && currentQuestion && (
         <div className="practice-layout">
           <div className="grid">
-            <div className="prompt">
-              <p>{currentQuestion.prompt}</p>
-            </div>
+            <InterviewerPrompt
+              isPromptVisible={isPromptVisible}
+              isSpeaking={isPromptSpeaking}
+              listenCount={promptListenCount}
+              maxListens={2}
+              mode="mock"
+              onPlay={playMockPrompt}
+              onShowPrompt={() => setIsPromptVisible(true)}
+              prompt={currentQuestion.prompt}
+            />
             <article className="card">
               <h3>답변 입력</h3>
               <p className="muted">
