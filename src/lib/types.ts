@@ -60,6 +60,14 @@ export type LearningPathProgress = {
   updatedAt?: string;
 };
 
+export type AnswerMaterial = {
+  tag: SurveyTag;
+  storyKo: string;
+  reasonKo: string;
+  exampleKo: string;
+  updatedAt: string;
+};
+
 export type AttemptMetrics = {
   wordCount: number;
   answerSeconds: number;

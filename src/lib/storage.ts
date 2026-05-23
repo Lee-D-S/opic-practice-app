@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AnswerMaterial,
   AppSettings,
   defaultLearningPathProgress,
   LearningPathProgress,
@@ -13,6 +14,7 @@ const settingsKey = "opic.settings.v1";
 const attemptsKey = "opic.practiceAttempts.v1";
 const mockResultsKey = "opic.mockResults.v1";
 const learningPathKey = "opic.learningPath.v1";
+const answerMaterialsKey = "opic.answerMaterials.v1";
 
 export function loadSettings(): AppSettings {
   if (typeof window === "undefined") {
@@ -101,4 +103,25 @@ export function loadLearningPathProgress(): LearningPathProgress {
 
 export function saveLearningPathProgress(progress: LearningPathProgress) {
   window.localStorage.setItem(learningPathKey, JSON.stringify(progress));
+}
+
+export function loadAnswerMaterials(): AnswerMaterial[] {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  const raw = window.localStorage.getItem(answerMaterialsKey);
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    return JSON.parse(raw) as AnswerMaterial[];
+  } catch {
+    return [];
+  }
+}
+
+export function saveAnswerMaterials(materials: AnswerMaterial[]) {
+  window.localStorage.setItem(answerMaterialsKey, JSON.stringify(materials));
 }

@@ -10,16 +10,19 @@ import {
   surveyOptions,
 } from "@/lib/questions";
 import {
+  loadAnswerMaterials,
   loadAttempts,
   loadLearningPathProgress,
   loadMockResults,
   loadSettings,
   saveAttempt,
+  saveAnswerMaterials,
   saveLearningPathProgress,
   saveMockResult,
   saveSettings,
 } from "@/lib/storage";
 import {
+  AnswerMaterial,
   AppSettings,
   CoachingFeedback,
   MockExamAnswer,
@@ -145,6 +148,7 @@ export default function Home() {
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [attempts, setAttempts] = useState<PracticeAttempt[]>([]);
   const [mockResults, setMockResults] = useState<MockExamResult[]>([]);
+  const [answerMaterials, setAnswerMaterials] = useState<AnswerMaterial[]>([]);
   const [learningPathProgress, setLearningPathProgress] =
     useState<LearningPathProgress>(defaultLearningPathProgress);
   const [question, setQuestion] = useState<Question>(questions[0]);
@@ -162,12 +166,14 @@ export default function Home() {
     const storedSettings = loadSettings();
     const storedAttempts = loadAttempts();
     const storedMockResults = loadMockResults();
+    const storedAnswerMaterials = loadAnswerMaterials();
     const storedLearningPathProgress = loadLearningPathProgress();
     // Hydrate browser-only localStorage state after mount.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setSettings(storedSettings);
     setAttempts(storedAttempts);
     setMockResults(storedMockResults);
+    setAnswerMaterials(storedAnswerMaterials);
     setLearningPathProgress(storedLearningPathProgress);
     setQuestion(
       recommendQuestion(
@@ -214,6 +220,24 @@ export default function Home() {
         ? learningPathProgress.completedStepIds.filter((id) => id !== stepId)
         : [...learningPathProgress.completedStepIds, stepId],
     });
+  }
+
+  function upsertAnswerMaterial(material: AnswerMaterial) {
+    const nextMaterials = [
+      material,
+      ...answerMaterials.filter((item) => item.tag !== material.tag),
+    ];
+    setAnswerMaterials(nextMaterials);
+    saveAnswerMaterials(nextMaterials);
+
+    if (!learningPathProgress.completedStepIds.includes("answer_materials")) {
+      updateLearningPathProgress({
+        completedStepIds: [
+          ...learningPathProgress.completedStepIds,
+          "answer_materials",
+        ],
+      });
+    }
   }
 
   function handleLearningPathAction(action: LearningPathAction) {
@@ -425,10 +449,12 @@ export default function Home() {
 
           {view === "path" && (
             <LearningPathView
+              answerMaterials={answerMaterials}
               attempts={attempts}
               learningPathProgress={learningPathProgress}
               mockResults={mockResults}
               onAction={handleLearningPathAction}
+              onSaveMaterial={upsertAnswerMaterial}
               onToggle={toggleLearningPathStep}
               settings={settings}
             />
@@ -561,17 +587,21 @@ function HomeView({
 }
 
 function LearningPathView({
+  answerMaterials,
   attempts,
   learningPathProgress,
   mockResults,
   onAction,
+  onSaveMaterial,
   onToggle,
   settings,
 }: {
+  answerMaterials: AnswerMaterial[];
   attempts: PracticeAttempt[];
   learningPathProgress: LearningPathProgress;
   mockResults: MockExamResult[];
   onAction: (action: LearningPathAction) => void;
+  onSaveMaterial: (material: AnswerMaterial) => void;
   onToggle: (stepId: LearningPathStepId) => void;
   settings: AppSettings;
 }) {
@@ -644,21 +674,111 @@ function LearningPathView({
         })}
       </div>
 
-      <article className="card materials-placeholder">
-        <h3>답변 재료 placeholder</h3>
-        <p className="muted">
-          영어 스크립트 암기가 아니라 말할 재료를 정리하는 공간입니다. 다음 구현에서 주제별 메모 저장으로 확장합니다.
-        </p>
-        <div className="grid three" style={{ marginTop: 12 }}>
-          {settings.surveyTags.slice(0, 3).map((tag) => (
-            <div className="rubric-box" key={tag}>
-              <h3>{tag}</h3>
-              <p>이야기 하나, 이유 하나, 구체 예시 하나를 한국어로 준비하세요.</p>
-            </div>
-          ))}
-        </div>
-      </article>
+      <AnswerMaterialsEditor
+        materials={answerMaterials}
+        onSave={onSaveMaterial}
+        tags={settings.surveyTags}
+      />
     </section>
+  );
+}
+
+function AnswerMaterialsEditor({
+  materials,
+  onSave,
+  tags,
+}: {
+  materials: AnswerMaterial[];
+  onSave: (material: AnswerMaterial) => void;
+  tags: SurveyTag[];
+}) {
+  const materialTags = tags.length > 0 ? tags : defaultSettings.surveyTags;
+
+  return (
+    <article className="card materials-editor">
+      <h3>답변 재료 정리</h3>
+      <p className="muted">
+        영어 스크립트가 아니라 말할 재료를 한국어로 짧게 준비하세요. 저장하면 학습 경로의 답변 재료 단계가 완료 처리됩니다.
+      </p>
+      <div className="grid" style={{ marginTop: 14 }}>
+        {materialTags.map((tag) => (
+          <AnswerMaterialCard
+            key={tag}
+            material={materials.find((item) => item.tag === tag)}
+            onSave={onSave}
+            tag={tag}
+          />
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function AnswerMaterialCard({
+  material,
+  onSave,
+  tag,
+}: {
+  material?: AnswerMaterial;
+  onSave: (material: AnswerMaterial) => void;
+  tag: SurveyTag;
+}) {
+  const [storyKo, setStoryKo] = useState(material?.storyKo ?? "");
+  const [reasonKo, setReasonKo] = useState(material?.reasonKo ?? "");
+  const [exampleKo, setExampleKo] = useState(material?.exampleKo ?? "");
+
+  function saveMaterial() {
+    onSave({
+      tag,
+      storyKo: storyKo.trim(),
+      reasonKo: reasonKo.trim(),
+      exampleKo: exampleKo.trim(),
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  const hasContent = Boolean(storyKo.trim() || reasonKo.trim() || exampleKo.trim());
+
+  return (
+    <div className="material-card">
+      <div className="section-head compact">
+        <div>
+          <h3>{tag}</h3>
+          {material?.updatedAt && (
+            <p className="muted">최근 저장: {new Date(material.updatedAt).toLocaleString("ko-KR")}</p>
+          )}
+        </div>
+        <button className="primary" disabled={!hasContent} onClick={saveMaterial}>
+          저장
+        </button>
+      </div>
+      <div className="grid three">
+        <label className="material-field">
+          <span>이야기</span>
+          <textarea
+            onChange={(event) => setStoryKo(event.target.value)}
+            placeholder="예: 지난달 부산 여행에서 비가 왔지만 작은 식당을 발견함"
+            value={storyKo}
+          />
+        </label>
+        <label className="material-field">
+          <span>이유</span>
+          <textarea
+            onChange={(event) => setReasonKo(event.target.value)}
+            placeholder="예: 예상 밖의 상황을 즐겁게 바꾼 경험이라 기억남"
+            value={reasonKo}
+          />
+        </label>
+        <label className="material-field">
+          <span>구체 예시</span>
+          <textarea
+            onChange={(event) => setExampleKo(event.target.value)}
+            placeholder="예: 친구들과 해산물 식당에서 오래 이야기함"
+            value={exampleKo}
+          />
+        </label>
+      </div>
+    </div>
   );
 }
 

@@ -275,6 +275,42 @@ button:disabled {
   margin-top: 14px;
 }
 
+.materials-editor {
+  margin-top: 14px;
+}
+
+.section-head.compact {
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.material-card {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+}
+
+.material-field {
+  display: grid;
+  gap: 8px;
+}
+
+.material-field span {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.material-field textarea {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 110px;
+  padding: 10px;
+  resize: vertical;
+  width: 100%;
+}
+
 .button-row {
   display: flex;
   flex-wrap: wrap;
