@@ -10,9 +10,11 @@ import {
 } from "@/lib/questions";
 import {
   loadAttempts,
+  loadLearningPathProgress,
   loadMockResults,
   loadSettings,
   saveAttempt,
+  saveLearningPathProgress,
   saveMockResult,
   saveSettings,
 } from "@/lib/storage";
@@ -27,6 +29,9 @@ import {
   Question,
   SurveyTag,
   defaultSettings,
+  LearningPathProgress,
+  LearningPathStepId,
+  defaultLearningPathProgress,
 } from "@/lib/types";
 import { measureTranscript } from "@/lib/coaching";
 import {
@@ -35,8 +40,16 @@ import {
   requestMockReport,
 } from "@/lib/apiClient";
 
-type View = "home" | "setup" | "practice" | "mock" | "history";
+type View = "home" | "path" | "setup" | "practice" | "mock" | "history";
 type PracticeStep = "ready" | "first" | "feedback" | "second" | "comparison";
+type LearningPathAction =
+  | "setup"
+  | "diagnostic"
+  | "materials"
+  | "practice"
+  | "roleplay"
+  | "mock"
+  | "review";
 
 type SpeechRecognitionLike = {
   lang: string;
@@ -63,11 +76,75 @@ type SpeechWindow = Window & {
 
 const levels: OPIcLevel[] = ["IM1", "IM2", "IH", "AL"];
 
+const learningPathSteps: {
+  id: LearningPathStepId;
+  title: string;
+  description: string;
+  action: LearningPathAction;
+}[] = [
+  {
+    id: "orientation",
+    title: "오리엔테이션",
+    description: "목표 등급과 학습용 서베이 주제를 확인하고 앱 흐름을 잡습니다.",
+    action: "setup",
+  },
+  {
+    id: "diagnostic",
+    title: "진단 세트",
+    description: "짧은 답변으로 현재 약점을 확인하는 첫 개별 연습입니다.",
+    action: "diagnostic",
+  },
+  {
+    id: "answer_materials",
+    title: "답변 재료 정리",
+    description: "선택 주제별로 이야기, 이유, 예시를 한국어 메모로 준비합니다.",
+    action: "materials",
+  },
+  {
+    id: "core_practice",
+    title: "핵심 말하기 훈련",
+    description: "추천 질문에 답하고 Function, Accuracy, Content, Text Type 피드백을 받습니다.",
+    action: "practice",
+  },
+  {
+    id: "feedback_loop",
+    title: "피드백 루프",
+    description: "1차 답변 코칭을 반영해 재답변하고 개선점을 비교합니다.",
+    action: "practice",
+  },
+  {
+    id: "roleplay_focus",
+    title: "역할극 집중 훈련",
+    description: "요청, 문제 설명, 대안 제시가 필요한 역할극 질문을 연습합니다.",
+    action: "roleplay",
+  },
+  {
+    id: "mini_mock",
+    title: "미니 모의고사",
+    description: "전체 모의고사 전에 짧은 연속 답변 흐름을 점검합니다.",
+    action: "mock",
+  },
+  {
+    id: "full_mock",
+    title: "전체 모의고사",
+    description: "40분, 15문항 시뮬레이션으로 전체 리포트를 생성합니다.",
+    action: "mock",
+  },
+  {
+    id: "weakness_review",
+    title: "약점 복습",
+    description: "기록에 남은 약점과 추천 복습 항목을 다음 훈련으로 연결합니다.",
+    action: "review",
+  },
+];
+
 export default function Home() {
   const [view, setView] = useState<View>("home");
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [attempts, setAttempts] = useState<PracticeAttempt[]>([]);
   const [mockResults, setMockResults] = useState<MockExamResult[]>([]);
+  const [learningPathProgress, setLearningPathProgress] =
+    useState<LearningPathProgress>(defaultLearningPathProgress);
   const [question, setQuestion] = useState<Question>(questions[0]);
   const [step, setStep] = useState<PracticeStep>("ready");
   const [firstTranscript, setFirstTranscript] = useState("");
@@ -83,9 +160,13 @@ export default function Home() {
     const storedSettings = loadSettings();
     const storedAttempts = loadAttempts();
     const storedMockResults = loadMockResults();
+    const storedLearningPathProgress = loadLearningPathProgress();
+    // Hydrate browser-only localStorage state after mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSettings(storedSettings);
     setAttempts(storedAttempts);
     setMockResults(storedMockResults);
+    setLearningPathProgress(storedLearningPathProgress);
     setQuestion(
       recommendQuestion(
         storedSettings.targetLevel,
@@ -113,6 +194,67 @@ export default function Home() {
   function updateSettings(next: AppSettings) {
     setSettings(next);
     saveSettings(next);
+  }
+
+  function updateLearningPathProgress(next: LearningPathProgress) {
+    const progress = {
+      ...next,
+      updatedAt: new Date().toISOString(),
+    };
+    setLearningPathProgress(progress);
+    saveLearningPathProgress(progress);
+  }
+
+  function toggleLearningPathStep(stepId: LearningPathStepId) {
+    const exists = learningPathProgress.completedStepIds.includes(stepId);
+    updateLearningPathProgress({
+      completedStepIds: exists
+        ? learningPathProgress.completedStepIds.filter((id) => id !== stepId)
+        : [...learningPathProgress.completedStepIds, stepId],
+    });
+  }
+
+  function handleLearningPathAction(action: LearningPathAction) {
+    if (action === "setup") {
+      setView("setup");
+      return;
+    }
+
+    if (action === "mock") {
+      setView("mock");
+      return;
+    }
+
+    if (action === "review") {
+      setView("history");
+      return;
+    }
+
+    if (action === "materials") {
+      setView("path");
+      return;
+    }
+
+    startPractice(selectLearningPathQuestion(action));
+  }
+
+  function selectLearningPathQuestion(action: LearningPathAction) {
+    if (action === "diagnostic") {
+      return recommendedQuestion;
+    }
+
+    if (action === "roleplay") {
+      const roleplay = questions.find(
+        (item) =>
+          item.level === settings.targetLevel &&
+          item.type === "roleplay" &&
+          !completedQuestionIds.includes(item.id),
+      );
+
+      return roleplay ?? recommendedQuestion;
+    }
+
+    return recommendedQuestion;
   }
 
   function startPractice(selectedQuestion = recommendedQuestion) {
@@ -230,6 +372,9 @@ export default function Home() {
             <button className={view === "home" ? "active" : ""} onClick={() => setView("home")}>
               홈
             </button>
+            <button className={view === "path" ? "active" : ""} onClick={() => setView("path")}>
+              학습 경로
+            </button>
             <button className={view === "setup" ? "active" : ""} onClick={() => setView("setup")}>
               연습 목표/서베이
             </button>
@@ -249,11 +394,24 @@ export default function Home() {
           {view === "home" && (
             <HomeView
               attempts={attempts}
+              learningPathProgress={learningPathProgress}
               question={recommendedQuestion}
               settings={settings}
+              onPath={() => setView("path")}
               onStart={() => startPractice(recommendedQuestion)}
               onSetup={() => setView("setup")}
               onMock={() => setView("mock")}
+            />
+          )}
+
+          {view === "path" && (
+            <LearningPathView
+              attempts={attempts}
+              learningPathProgress={learningPathProgress}
+              mockResults={mockResults}
+              onAction={handleLearningPathAction}
+              onToggle={toggleLearningPathStep}
+              settings={settings}
             />
           )}
 
@@ -302,21 +460,27 @@ export default function Home() {
 
 function HomeView({
   attempts,
+  learningPathProgress,
   question,
   settings,
+  onPath,
   onStart,
   onSetup,
   onMock,
 }: {
   attempts: PracticeAttempt[];
+  learningPathProgress: LearningPathProgress;
   question: Question;
   settings: AppSettings;
+  onPath: () => void;
   onStart: () => void;
   onSetup: () => void;
   onMock: () => void;
 }) {
   const latestWeakness =
     attempts[0]?.feedback.improvementsKo[0] ?? "첫 답변에서는 구체적인 경험 하나를 말하는 데 집중하세요.";
+  const pathCompletion = getLearningPathCompletion(learningPathProgress);
+  const nextPathStep = getNextLearningPathStep(learningPathProgress);
 
   return (
     <section className="panel">
@@ -343,6 +507,19 @@ function HomeView({
         </article>
       </div>
 
+      <article className="card path-summary">
+        <div>
+          <h3>학습 경로</h3>
+          <p className="muted">
+            다음 단계: {nextPathStep.title} · 진행률 {pathCompletion.completed}/{pathCompletion.total}
+          </p>
+        </div>
+        <div className="path-progress" aria-label={`학습 경로 진행률 ${pathCompletion.percent}%`}>
+          <span style={{ width: `${pathCompletion.percent}%` }} />
+        </div>
+        <button className="secondary" onClick={onPath}>학습 경로 보기</button>
+      </article>
+
       <div className="grid three" style={{ marginTop: 14 }}>
         <div className="card metric">
           <span className="muted">완료한 연습</span>
@@ -357,6 +534,108 @@ function HomeView({
           <strong>{settings.surveyTags.length}</strong>
         </div>
       </div>
+    </section>
+  );
+}
+
+function LearningPathView({
+  attempts,
+  learningPathProgress,
+  mockResults,
+  onAction,
+  onToggle,
+  settings,
+}: {
+  attempts: PracticeAttempt[];
+  learningPathProgress: LearningPathProgress;
+  mockResults: MockExamResult[];
+  onAction: (action: LearningPathAction) => void;
+  onToggle: (stepId: LearningPathStepId) => void;
+  settings: AppSettings;
+}) {
+  const completion = getLearningPathCompletion(learningPathProgress);
+  const nextStep = getNextLearningPathStep(learningPathProgress);
+  const latestWeakness =
+    attempts[0]?.feedback.improvementsKo[0] ??
+    mockResults[0]?.report.weaknessesKo[0] ??
+    "아직 기록이 없습니다. 진단 세트로 첫 약점을 확인하세요.";
+
+  return (
+    <section className="panel">
+      <div className="section-head">
+        <div>
+          <h2>학습 경로</h2>
+          <p className="muted">
+            {settings.targetLevel} 목표 기준의 단계형 학습 흐름입니다. 공식 OPIc 과정이 아니라 앱 내부 연습 순서입니다.
+          </p>
+        </div>
+        <div className="path-meter">
+          <strong>{completion.percent}%</strong>
+          <span className="muted">완료</span>
+        </div>
+      </div>
+
+      <div className="grid two">
+        <article className="card feedback">
+          <h3>다음 추천 단계</h3>
+          <p>{nextStep.title}</p>
+          <p className="muted" style={{ marginTop: 8 }}>{nextStep.description}</p>
+          <div className="button-row" style={{ marginTop: 14 }}>
+            <button className="primary" onClick={() => onAction(nextStep.action)}>시작</button>
+            <button className="secondary" onClick={() => onToggle(nextStep.id)}>완료 표시</button>
+          </div>
+        </article>
+        <article className="card">
+          <h3>최근 약점 기반 힌트</h3>
+          <p>{latestWeakness}</p>
+          <p className="muted" style={{ marginTop: 8 }}>
+            기록이 쌓이면 이 영역은 반복 약점 복습 진입점으로 사용합니다.
+          </p>
+        </article>
+      </div>
+
+      <div className="path-progress large" aria-label={`학습 경로 진행률 ${completion.percent}%`}>
+        <span style={{ width: `${completion.percent}%` }} />
+      </div>
+
+      <div className="path-steps">
+        {learningPathSteps.map((step, index) => {
+          const isCompleted = learningPathProgress.completedStepIds.includes(step.id);
+
+          return (
+            <article className={`card path-step ${isCompleted ? "completed" : ""}`} key={step.id}>
+              <div className="step-number">{index + 1}</div>
+              <div>
+                <h3>{step.title}</h3>
+                <p className="muted">{step.description}</p>
+              </div>
+              <div className="button-row">
+                <button className="secondary" onClick={() => onAction(step.action)}>
+                  {actionLabel(step.action)}
+                </button>
+                <button className={isCompleted ? "ghost" : "primary"} onClick={() => onToggle(step.id)}>
+                  {isCompleted ? "완료 취소" : "완료"}
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      <article className="card materials-placeholder">
+        <h3>답변 재료 placeholder</h3>
+        <p className="muted">
+          영어 스크립트 암기가 아니라 말할 재료를 정리하는 공간입니다. 다음 구현에서 주제별 메모 저장으로 확장합니다.
+        </p>
+        <div className="grid three" style={{ marginTop: 12 }}>
+          {settings.surveyTags.slice(0, 3).map((tag) => (
+            <div className="rubric-box" key={tag}>
+              <h3>{tag}</h3>
+              <p>이야기 하나, 이유 하나, 구체 예시 하나를 한국어로 준비하세요.</p>
+            </div>
+          ))}
+        </div>
+      </article>
     </section>
   );
 }
@@ -1137,6 +1416,54 @@ function formatSeconds(seconds: number) {
   const rest = (seconds % 60).toString().padStart(2, "0");
 
   return `${minutes}:${rest}`;
+}
+
+function getLearningPathCompletion(progress: LearningPathProgress) {
+  const completed = learningPathSteps.filter((step) =>
+    progress.completedStepIds.includes(step.id),
+  ).length;
+  const total = learningPathSteps.length;
+
+  return {
+    completed,
+    total,
+    percent: Math.round((completed / total) * 100),
+  };
+}
+
+function getNextLearningPathStep(progress: LearningPathProgress) {
+  return (
+    learningPathSteps.find((step) => !progress.completedStepIds.includes(step.id)) ??
+    learningPathSteps[learningPathSteps.length - 1]
+  );
+}
+
+function actionLabel(action: LearningPathAction) {
+  if (action === "setup") {
+    return "설정 열기";
+  }
+
+  if (action === "diagnostic") {
+    return "진단 시작";
+  }
+
+  if (action === "materials") {
+    return "재료 보기";
+  }
+
+  if (action === "practice") {
+    return "연습 시작";
+  }
+
+  if (action === "roleplay") {
+    return "역할극";
+  }
+
+  if (action === "mock") {
+    return "모의고사";
+  }
+
+  return "기록 보기";
 }
 
 function finishReasonLabel(reason: "completed" | "ended" | "time" | null) {

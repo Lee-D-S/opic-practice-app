@@ -2,6 +2,8 @@
 
 import {
   AppSettings,
+  defaultLearningPathProgress,
+  LearningPathProgress,
   MockExamResult,
   defaultSettings,
   PracticeAttempt,
@@ -10,6 +12,7 @@ import {
 const settingsKey = "opic.settings.v1";
 const attemptsKey = "opic.practiceAttempts.v1";
 const mockResultsKey = "opic.mockResults.v1";
+const learningPathKey = "opic.learningPath.v1";
 
 export function loadSettings(): AppSettings {
   if (typeof window === "undefined") {
@@ -74,4 +77,28 @@ export function loadMockResults(): MockExamResult[] {
 export function saveMockResult(result: MockExamResult) {
   const results = loadMockResults();
   window.localStorage.setItem(mockResultsKey, JSON.stringify([result, ...results].slice(0, 20)));
+}
+
+export function loadLearningPathProgress(): LearningPathProgress {
+  if (typeof window === "undefined") {
+    return defaultLearningPathProgress;
+  }
+
+  const raw = window.localStorage.getItem(learningPathKey);
+  if (!raw) {
+    return defaultLearningPathProgress;
+  }
+
+  try {
+    return {
+      ...defaultLearningPathProgress,
+      ...JSON.parse(raw),
+    };
+  } catch {
+    return defaultLearningPathProgress;
+  }
+}
+
+export function saveLearningPathProgress(progress: LearningPathProgress) {
+  window.localStorage.setItem(learningPathKey, JSON.stringify(progress));
 }

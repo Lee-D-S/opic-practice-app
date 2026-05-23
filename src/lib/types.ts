@@ -44,6 +44,22 @@ export type AppSettings = {
   surveyTags: SurveyTag[];
 };
 
+export type LearningPathStepId =
+  | "orientation"
+  | "diagnostic"
+  | "answer_materials"
+  | "core_practice"
+  | "feedback_loop"
+  | "roleplay_focus"
+  | "mini_mock"
+  | "full_mock"
+  | "weakness_review";
+
+export type LearningPathProgress = {
+  completedStepIds: LearningPathStepId[];
+  updatedAt?: string;
+};
+
 export type AttemptMetrics = {
   wordCount: number;
   answerSeconds: number;
@@ -108,4 +124,8 @@ export type MockExamResult = {
 export const defaultSettings: AppSettings = {
   targetLevel: "IM2",
   surveyTags: ["movie", "travel", "food"],
+};
+
+export const defaultLearningPathProgress: LearningPathProgress = {
+  completedStepIds: [],
 };

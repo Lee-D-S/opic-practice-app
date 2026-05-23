@@ -198,6 +198,83 @@ button:disabled {
   font-size: 26px;
 }
 
+.path-summary {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1.2fr) minmax(160px, 1fr) auto;
+  margin-top: 14px;
+}
+
+.path-progress {
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  height: 12px;
+  overflow: hidden;
+}
+
+.path-progress span {
+  background: linear-gradient(90deg, var(--accent), var(--primary));
+  display: block;
+  height: 100%;
+}
+
+.path-progress.large {
+  height: 14px;
+  margin: 16px 0;
+}
+
+.path-meter {
+  align-items: flex-end;
+  display: grid;
+  justify-items: end;
+}
+
+.path-meter strong {
+  color: var(--primary-strong);
+  font-size: 28px;
+}
+
+.path-steps {
+  display: grid;
+  gap: 10px;
+}
+
+.path-step {
+  align-items: center;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
+}
+
+.path-step.completed {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+.step-number {
+  align-items: center;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  display: flex;
+  font-weight: 700;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+.path-step.completed .step-number {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.materials-placeholder {
+  margin-top: 14px;
+}
+
 .button-row {
   display: flex;
   flex-wrap: wrap;
@@ -369,6 +446,8 @@ button:disabled {
 @media (max-width: 980px) {
   .app-frame,
   .practice-layout,
+  .path-summary,
+  .path-step,
   .grid.two,
   .grid.three {
     grid-template-columns: 1fr;
