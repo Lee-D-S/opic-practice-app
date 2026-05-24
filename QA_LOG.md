@@ -11,6 +11,28 @@
 
 ## 2026-05-24
 
+### 학습 기록 기반 추천 정적 검증
+
+#### 범위
+
+- 답변 재료 저장 여부 기반 추천
+- 최근 답변 길이 기반 추천
+- 역할극 약점 기반 추천
+- 모의고사 기록 유무 기반 추천
+- 시간 사용 피드백 기반 추천
+- 학습 경로 UI 추천 이유 표시
+
+#### 결과
+
+- `rtk npm test`: Pass, 6 files / 16 tests
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not covered: 브라우저에서 실제 학습 경로 화면의 추천 이유 표시와 버튼 이동을 수동 확인해야 한다.
+
 ### 모의고사 리포트 시간 분석 정적 검증
 
 #### 범위
