@@ -11,6 +11,26 @@
 
 ## 2026-05-25
 
+### 반복 약점 집계 정적 검증
+
+#### 범위
+
+- 개별 연습 개선점 기반 약점 집계
+- 모의고사 약점, 추천 복습, 시간 피드백 기반 약점 집계
+- 반복 약점이 있으면 학습 경로 추천에서 우선 반영
+- 기록 화면 반복 약점 카테고리와 반복 횟수 표시
+
+#### 결과
+
+- `rtk npm test`: Pass, 9 files / 23 tests
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not covered: 실제 브라우저에서 다양한 한국어 피드백 문구가 의도한 약점 카테고리로 잘 묶이는지 수동 확인이 필요하다.
+
 ### 기록 화면 시간 추이 정적 검증
 
 #### 범위
