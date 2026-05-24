@@ -47,14 +47,14 @@ export function recommendLearningPathStep({
   if (repeatedWeakness) {
     if (repeatedWeakness.category === "roleplay") {
       return {
-        stepId: "roleplay_focus",
+        stepId: repeatedWeakness.recommendedStepId,
         reasonKo: `${repeatedWeakness.labelKo} 약점이 ${repeatedWeakness.count}회 반복되었습니다. 역할극 집중 훈련에서 요청, 문제 설명, 대안 제시를 먼저 보완하세요.`,
       };
     }
 
     return {
-      stepId: "weakness_review",
-      reasonKo: `${repeatedWeakness.labelKo} 약점이 ${repeatedWeakness.count}회 반복되었습니다. 최근 1회 기록보다 반복 패턴을 우선해 약점 복습을 추천합니다.`,
+      stepId: repeatedWeakness.recommendedStepId,
+      reasonKo: `${repeatedWeakness.labelKo} 약점이 ${repeatedWeakness.count}회 반복되었습니다. 최근 1회 기록보다 반복 패턴을 우선해 ${stepLabel(repeatedWeakness.recommendedStepId)}을 추천합니다.`,
     };
   }
 
@@ -100,6 +100,22 @@ export function recommendLearningPathStep({
     stepId: firstIncomplete,
     reasonKo: "최근 기록에서 뚜렷한 특정 약점은 없으므로 아직 완료하지 않은 다음 단계를 추천합니다.",
   };
+}
+
+function stepLabel(stepId: LearningPathStepId) {
+  const labels: Record<LearningPathStepId, string> = {
+    orientation: "오리엔테이션",
+    diagnostic: "진단 세트",
+    answer_materials: "답변 재료 정리",
+    core_practice: "핵심 말하기 훈련",
+    feedback_loop: "피드백 루프",
+    roleplay_focus: "역할극 집중 훈련",
+    mini_mock: "미니 모의고사",
+    full_mock: "전체 모의고사",
+    weakness_review: "약점 복습",
+  };
+
+  return labels[stepId];
 }
 
 function firstIncompleteStep(progress: LearningPathProgress): LearningPathStepId {

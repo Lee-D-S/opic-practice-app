@@ -11,6 +11,26 @@
 
 ## 2026-05-25
 
+### 반복 약점 카테고리 정밀도 정적 검증
+
+#### 범위
+
+- 문법/정확도, 어휘 다양성, 시제, 비교/대조, 유창성 카테고리 추가
+- 반복 약점 카테고리별 추천 학습 경로 단계 연결
+- 역할극 반복 약점은 역할극 집중 훈련으로 유지
+- 어휘 반복 약점은 답변 재료 정리로 연결
+
+#### 결과
+
+- `rtk npm test`: Pass, 10 files / 29 tests
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not covered: 실제 Gemini 피드백 문구가 충분히 쌓인 뒤 키워드 분류 false positive/false negative를 추가 점검해야 한다.
+
 ### 기록 화면 장기 시간 추이 차트 정적 검증
 
 #### 범위

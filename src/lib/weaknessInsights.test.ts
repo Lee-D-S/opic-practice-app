@@ -36,17 +36,57 @@ describe("analyzeWeaknessInsights", () => {
         category: "roleplay",
         count: 1,
         labelKo: "역할극",
+        recommendedStepId: "roleplay_focus",
         reasonKo: "역할극 약점",
       },
       {
         category: "structure",
         count: 2,
         labelKo: "구조",
+        recommendedStepId: "core_practice",
         reasonKo: "구조 약점",
       },
     ]);
 
     expect(repeated?.category).toBe("structure");
+  });
+
+  it("classifies language, comparison, and fluency weaknesses separately", () => {
+    const insights = analyzeWeaknessInsights({
+      attempts: [
+        attempt(["문법 정확도와 전치사 사용을 보완하세요."], 90),
+        attempt(["과거 경험에서 시제가 흔들립니다."], 90),
+        attempt(["어휘 다양성이 부족하고 같은 표현이 반복됩니다."], 90),
+        attempt(["과거와 현재를 비교하는 대조 표현이 부족합니다."], 90),
+        attempt(["채움말이 많고 말의 흐름이 자주 끊깁니다."], 90),
+      ],
+      mockResults: [],
+    });
+
+    expect(insights).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          category: "grammar_accuracy",
+          recommendedStepId: "feedback_loop",
+        }),
+        expect.objectContaining({
+          category: "tense",
+          recommendedStepId: "feedback_loop",
+        }),
+        expect.objectContaining({
+          category: "vocabulary",
+          recommendedStepId: "answer_materials",
+        }),
+        expect.objectContaining({
+          category: "comparison",
+          recommendedStepId: "core_practice",
+        }),
+        expect.objectContaining({
+          category: "fluency",
+          recommendedStepId: "feedback_loop",
+        }),
+      ]),
+    );
   });
 });
 

@@ -84,8 +84,23 @@ describe("recommendLearningPathStep", () => {
       progress: progress(["orientation", "answer_materials"]),
     });
 
-    expect(recommendation.stepId).toBe("weakness_review");
+    expect(recommendation.stepId).toBe("core_practice");
     expect(recommendation.reasonKo).toContain("반복");
+  });
+
+  it("routes repeated vocabulary weakness to answer materials", () => {
+    const recommendation = recommendLearningPathStep({
+      answerMaterials: [material()],
+      attempts: [
+        attempt(["어휘 다양성이 부족하고 같은 표현이 반복됩니다."], 90),
+        attempt(["단어 반복을 줄이고 표현 다양성을 늘리세요."], 90),
+      ],
+      mockResults: [],
+      progress: progress(["orientation", "answer_materials"]),
+    });
+
+    expect(recommendation.stepId).toBe("answer_materials");
+    expect(recommendation.reasonKo).toContain("어휘 다양성");
   });
 });
 
