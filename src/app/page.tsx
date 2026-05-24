@@ -49,6 +49,10 @@ import {
   requestFeedback,
   requestMockReport,
 } from "@/lib/apiClient";
+import {
+  buildMockTimingTrend,
+  summarizeMockTiming,
+} from "@/lib/mockTiming";
 
 type View = "home" | "path" | "setup" | "practice" | "mock" | "history";
 type PracticeStep = "ready" | "first" | "feedback" | "second" | "comparison";
@@ -1896,6 +1900,8 @@ function HistoryView({
   attempts: PracticeAttempt[];
   mockResults: MockExamResult[];
 }) {
+  const timingTrend = buildMockTimingTrend(mockResults);
+
   return (
     <section className="panel">
       <div className="section-head">
@@ -1904,6 +1910,40 @@ function HistoryView({
           <p className="muted">브라우저 로컬 저장소에 최근 50개 연습 결과를 저장합니다.</p>
         </div>
       </div>
+      <article className="card history-timing">
+        <div>
+          <h3>시간 사용 추이</h3>
+          <p className="muted">Q1 warm-up을 제외한 최근 3회 모의고사 기준입니다.</p>
+        </div>
+        {timingTrend.latest ? (
+          <div className="grid three">
+            <div className="metric">
+              <span className="muted">최근 평균 답변</span>
+              <strong>{formatOptionalSeconds(timingTrend.latest.averageElapsedSeconds)}</strong>
+            </div>
+            <div className="metric">
+              <span className="muted">최근 초과 문항</span>
+              <strong>{timingTrend.latest.overRecommendedCount}</strong>
+            </div>
+            <div className="metric">
+              <span className="muted">최근 짧은 답변</span>
+              <strong>{timingTrend.latest.veryShortCount}</strong>
+            </div>
+          </div>
+        ) : (
+          <div className="empty compact">시간 기록이 있는 모의고사 결과가 아직 없습니다.</div>
+        )}
+        {timingTrend.latest && (
+          <p className="muted timing-summary">
+            최근 3회 평균 답변 시간은 {formatOptionalSeconds(timingTrend.averageElapsedSeconds)}이고,
+            권장 시간을 넘긴 문항은 평균 {timingTrend.averageOverRecommendedCount}개,
+            매우 짧은 답변은 평균 {timingTrend.averageVeryShortCount}개입니다.
+            {timingTrend.previous
+              ? ` 직전 모의고사 평균은 ${formatOptionalSeconds(timingTrend.previous.averageElapsedSeconds)}였습니다.`
+              : ""}
+          </p>
+        )}
+      </article>
       {attempts.length === 0 ? (
         <div className="empty">아직 저장된 연습 기록이 없습니다.</div>
       ) : (
@@ -1922,15 +1962,25 @@ function HistoryView({
         {mockResults.length === 0 ? (
           <div className="empty">아직 저장된 모의고사 기록이 없습니다.</div>
         ) : (
-          mockResults.map((result) => (
-            <article className="card" key={result.id}>
-              <h3>{new Date(result.createdAt).toLocaleString("ko-KR")}</h3>
-              <p className="muted">
-                {result.targetLevel} / {result.answers.length}문항(Q1 warm-up 제외 평가) / 연습용 참고 등급: {result.report.estimatedLevel}
-              </p>
-              <p style={{ marginTop: 8 }}>{result.report.summaryKo}</p>
-            </article>
-          ))
+          mockResults.map((result) => {
+            const timing = summarizeMockTiming(result.answers);
+
+            return (
+              <article className="card" key={result.id}>
+                <h3>{new Date(result.createdAt).toLocaleString("ko-KR")}</h3>
+                <p className="muted">
+                  {result.targetLevel} / {timing.ratedAnswerCount}개 평가 문항 / 연습용 참고 등급: {result.report.estimatedLevel}
+                </p>
+                <div className="history-timing-row">
+                  <span>평균 답변 {formatOptionalSeconds(timing.averageElapsedSeconds)}</span>
+                  <span>권장 시간 초과 {timing.overRecommendedCount}개</span>
+                  <span>짧은 답변 {timing.veryShortCount}개</span>
+                  <span>총 사용 {formatSeconds(result.durationSeconds)}</span>
+                </div>
+                <p style={{ marginTop: 8 }}>{result.report.summaryKo}</p>
+              </article>
+            );
+          })
         )}
       </div>
     </section>
@@ -1944,6 +1994,10 @@ function formatSeconds(seconds: number) {
   const rest = (seconds % 60).toString().padStart(2, "0");
 
   return `${minutes}:${rest}`;
+}
+
+function formatOptionalSeconds(seconds: number | null) {
+  return seconds === null ? "기록 없음" : formatSeconds(seconds);
 }
 
 function getLearningPathCompletion(progress: LearningPathProgress) {
