@@ -11,6 +11,26 @@
 
 ## 2026-05-24
 
+### 모의고사 리포트 시간 분석 정적 검증
+
+#### 범위
+
+- local mock report timing feedback
+- Gemini mock report prompt timing fields
+- mock report UI time usage section
+- Q1 warm-up exclusion from timing analysis
+
+#### 결과
+
+- `rtk npm test`: Pass, 5 files / 10 tests
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not run: 브라우저에서 실제 모의고사 완료 후 시간 사용 섹션 표시를 수동 확인해야 한다.
+
 ### API route fallback 테스트 정적 검증
 
 #### 범위

@@ -38,6 +38,7 @@
 - 학습 경로 MVP UI: 단계 목록, 진행률 저장, 다음 추천 단계, 진단/연습/모의고사/기록 연결, 답변 재료 placeholder
 - 답변 재료 저장: 주제별 이야기/이유/구체 예시 한국어 메모, 최근 저장 시각, 학습 경로 단계 완료 연결
 - 모의고사 타이밍 UX: 전체 남은 시간 경고, 현재 문항 경과 시간, 권장 답변 시간, 문항별 소요 시간 저장
+- 모의고사 리포트 시간 분석: Q1 warm-up 제외, 평균 소요 시간, 권장 시간 초과 문항 수, 매우 짧은 답변 패턴 피드백
 - DS Interviewer 음성 중심 질문 UI: 개별 연습/모의고사 질문 텍스트 기본 숨김, 브라우저 음성 합성 재생, 모의고사 듣기 횟수 제한
 - Vitest 자동화 테스트: storage persistence/fallback, 모의고사 로컬 리포트 Q1 warm-up 제외, feedback/compare/mock-report API route fallback 검증
 
@@ -47,7 +48,7 @@
 - 일부 구현 개념은 계속 공식 정렬 검토가 필요하다: 서베이 주제, 레벨 라벨, 자기평가 난이도, 내부 문제 유형, 모의고사 구성, 예상 등급 문구.
 - 모의고사는 더 강한 질문 생성과 더 깊은 리포트가 필요하다.
 - 모의고사 리포트 프롬프트와 UI도 개별 피드백만큼 공식 정렬 기준을 자세히 보여줄 필요가 있다.
-- 모의고사 문항별 소요 시간은 저장되지만 아직 리포트 분석에는 사용하지 않는다.
+- 모의고사 시간 분석은 local/Gemini 리포트에 반영되었지만, 기록 화면의 추이 분석에는 아직 사용하지 않는다.
 - `public/ds-interviewer.webp` 자산이 없으면 DS fallback만 표시된다.
 - STT는 브라우저 Web Speech API를 UI에서 직접 사용하고 있으며 아직 정식 `STTProvider` 뒤에 있지 않다.
 - 대시보드 추천은 단순하며 아직 기록 기반 추천이 강하지 않다.
@@ -66,7 +67,7 @@
 | Gemini 피드백 | 85% | 진행 중 | Gemini 키가 있으면 Gemini를 사용하고 실패 시 로컬 대체 응답을 사용한다. 프롬프트는 공식 정렬 기준을 사용한다. 출력 보강이 더 필요하다. |
 | 평가 기준 정렬 | 60% | 진행 중 | 공식 기준 가이드가 있고 개별 피드백은 FACT/OPIc 기준을 사용한다. 모의고사 리포트 UI/detail과 추가 문구 점검이 필요하다. |
 | 재답변 비교 | 75% | 진행 중 | API route를 통한 비교가 동작한다. 더 풍부한 지표와 UI 개선이 필요하다. |
-| 모의고사 | 92% | 진행 중 | DS Interviewer 음성 질문, 40분/15문항 흐름, Q1 warm-up/non-rated 처리, 시뮬레이션 패턴 표시, 건너뛰기/중간 종료, 부분 리포트, 최종 리포트, 타이밍 UX가 있다. 질문 세트와 리포트 깊이 강화가 필요하다. |
+| 모의고사 | 94% | 진행 중 | DS Interviewer 음성 질문, 40분/15문항 흐름, Q1 warm-up/non-rated 처리, 시뮬레이션 패턴 표시, 건너뛰기/중간 종료, 부분 리포트, 최종 리포트, 타이밍 UX와 시간 분석이 있다. 질문 세트와 리포트 깊이 강화가 필요하다. |
 | 질문은행 | 25% | 진행 중 | 데이터 모델, 작성 정책, 첫 IM2/IH 확장 배치가 있다. 등급별 50문항, 총 200문항까지 계속 확장해야 한다. |
 | 공식 정렬 audit | 80% | 진행 중 | 정책 문서와 주요 UI 문구, 서베이 주제 라벨링이 정리되었다. 남은 모의고사/콘텐츠 확장 후 최종 검토가 필요하다. |
 | STT 추상화 | 35% | 진행 중 | 브라우저 STT가 UI에서 동작한다. 정식 provider 계약과 대체 UX가 필요하다. |
@@ -140,12 +141,13 @@ MVP는 사용자가 다음을 할 수 있을 때 완료로 본다.
 - 2026-05-23: 학습 경로 답변 재료 저장 구현. 주제별 이야기/이유/구체 예시 메모와 최근 저장 시각, 답변 재료 단계 완료 연결 추가. `rtk npm run build` 통과, `rtk npm run lint` 에러 없이 통과(기존 모의고사 타이머 effect dependency warning 1건 남음)
 - 2026-05-24: Vitest 추가, storage 저장/복구와 모의고사 local report Q1 warm-up 제외 테스트 구현. `rtk npm test`, `rtk npm run build`, `rtk npm run lint` 통과(기존 모의고사 타이머 effect dependency warning 1건 남음)
 - 2026-05-24: feedback/compare/mock-report API route fallback 테스트 추가. Gemini 실패 시 `provider=local`과 local fallback 응답을 검증한다. `rtk npm test`, `rtk npm run build`, `rtk npm run lint` 통과(기존 모의고사 타이머 effect dependency warning 1건 남음)
+- 2026-05-24: 모의고사 문항별 소요 시간을 리포트 분석에 반영. local report와 Gemini prompt에 시간 정보를 추가하고 UI에 시간 사용 섹션을 표시한다. `rtk npm test`, `rtk npm run build`, `rtk npm run lint` 통과(기존 모의고사 타이머 effect dependency warning 1건 남음)
 
 ## 다음 작업
 
-1. 모의고사 문항별 소요 시간을 리포트 분석에 반영
-2. 학습 기록 기반 학습 경로 추천 강화
-3. DS Interviewer 질문 UI 상호작용 테스트 추가
+1. 학습 기록 기반 학습 경로 추천 강화
+2. DS Interviewer 질문 UI 상호작용 테스트 추가
+3. 기록 화면에 시간 사용 추이 표시
 
 ## 우선순위 근거
 
