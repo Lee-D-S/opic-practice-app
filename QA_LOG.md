@@ -11,6 +11,27 @@
 
 ## 2026-05-25
 
+### 기록 화면 시간 추이 정적 검증
+
+#### 범위
+
+- Q1 warm-up 제외 시간 요약
+- 최근 3회 모의고사 평균 답변 시간 계산
+- 권장 시간 초과 문항 수 계산
+- 매우 짧은 답변 수 계산
+- 기록 화면 모의고사별 시간 요약 표시
+
+#### 결과
+
+- `rtk npm test`: Pass, 8 files / 20 tests
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not covered: 실제 브라우저에서 오래된 저장 데이터와 신규 저장 데이터가 섞인 기록 화면을 수동 확인해야 한다.
+
 ### DS Interviewer UI 상호작용 자동화 검증
 
 #### 범위
