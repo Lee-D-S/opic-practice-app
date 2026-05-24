@@ -13,8 +13,14 @@ export type MockTimingTrend = {
   averageElapsedSeconds: number | null;
   averageOverRecommendedCount: number;
   averageVeryShortCount: number;
+  chartPoints: MockTimingTrendPoint[];
   latest: MockTimingSummary | null;
   previous: MockTimingSummary | null;
+};
+
+export type MockTimingTrendPoint = MockTimingSummary & {
+  createdAt: string;
+  resultId: string;
 };
 
 export function summarizeMockTiming(
@@ -54,16 +60,22 @@ export function summarizeMockTiming(
 export function buildMockTimingTrend(
   results: MockExamResult[],
 ): MockTimingTrend {
-  const summaries = results
-    .map((result) => summarizeMockTiming(result.answers))
-    .filter((summary) => summary.timedAnswerCount > 0);
-  const recent = summaries.slice(0, 3);
+  const points = results
+    .map((result) => ({
+      ...summarizeMockTiming(result.answers),
+      createdAt: result.createdAt,
+      resultId: result.id,
+    }))
+    .filter((point) => point.timedAnswerCount > 0);
+  const recent = points.slice(0, 3);
+  const chartPoints = points.slice(0, 6).reverse();
 
   if (recent.length === 0) {
     return {
       averageElapsedSeconds: null,
       averageOverRecommendedCount: 0,
       averageVeryShortCount: 0,
+      chartPoints: [],
       latest: null,
       previous: null,
     };
@@ -79,6 +91,7 @@ export function buildMockTimingTrend(
     averageVeryShortCount: average(
       recent.map((summary) => summary.veryShortCount),
     ),
+    chartPoints,
     latest: recent[0],
     previous: recent[1] ?? null,
   };

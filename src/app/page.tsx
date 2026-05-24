@@ -1905,6 +1905,16 @@ function HistoryView({
   mockResults: MockExamResult[];
 }) {
   const timingTrend = buildMockTimingTrend(mockResults);
+  const timingChartMaxAverage = Math.max(
+    120,
+    ...timingTrend.chartPoints.map((point) => point.averageElapsedSeconds ?? 0),
+  );
+  const timingChartMaxCount = Math.max(
+    1,
+    ...timingTrend.chartPoints.map((point) =>
+      Math.max(point.overRecommendedCount, point.veryShortCount),
+    ),
+  );
   const weaknessInsights = analyzeWeaknessInsights({ attempts, mockResults });
 
   return (
@@ -1947,6 +1957,60 @@ function HistoryView({
               ? ` 직전 모의고사 평균은 ${formatOptionalSeconds(timingTrend.previous.averageElapsedSeconds)}였습니다.`
               : ""}
           </p>
+        )}
+        {timingTrend.chartPoints.length > 0 && (
+          <div className="timing-chart" aria-label="최근 모의고사 시간 사용 차트">
+            <div className="timing-chart-legend" aria-hidden="true">
+              <span className="average">평균 답변</span>
+              <span className="over">초과 문항</span>
+              <span className="short">짧은 답변</span>
+            </div>
+            {timingTrend.chartPoints.map((point) => {
+              return (
+                <div className="timing-chart-row" key={point.resultId}>
+                  <span className="timing-chart-label">{formatShortDate(point.createdAt)}</span>
+                  <div className="timing-chart-bars">
+                    <div className="timing-bar-line">
+                      <span
+                        className="timing-bar average"
+                        style={{
+                          width: `${Math.max(
+                            4,
+                            ((point.averageElapsedSeconds ?? 0) / timingChartMaxAverage) * 100,
+                          )}%`,
+                        }}
+                      />
+                      <span>{formatOptionalSeconds(point.averageElapsedSeconds)}</span>
+                    </div>
+                    <div className="timing-bar-line">
+                      <span
+                        className="timing-bar over"
+                        style={{
+                          width: `${Math.max(
+                            4,
+                            (point.overRecommendedCount / timingChartMaxCount) * 100,
+                          )}%`,
+                        }}
+                      />
+                      <span>초과 {point.overRecommendedCount}개</span>
+                    </div>
+                    <div className="timing-bar-line">
+                      <span
+                        className="timing-bar short"
+                        style={{
+                          width: `${Math.max(
+                            4,
+                            (point.veryShortCount / timingChartMaxCount) * 100,
+                          )}%`,
+                        }}
+                      />
+                      <span>짧음 {point.veryShortCount}개</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         )}
       </article>
       <article className="card history-timing">
@@ -2022,6 +2086,13 @@ function formatSeconds(seconds: number) {
 
 function formatOptionalSeconds(seconds: number | null) {
   return seconds === null ? "기록 없음" : formatSeconds(seconds);
+}
+
+function formatShortDate(value: string) {
+  return new Date(value).toLocaleDateString("ko-KR", {
+    month: "numeric",
+    day: "numeric",
+  });
 }
 
 function getLearningPathCompletion(progress: LearningPathProgress) {

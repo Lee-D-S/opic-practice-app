@@ -36,6 +36,28 @@ describe("buildMockTimingTrend", () => {
     expect(trend.averageElapsedSeconds).toBe(80);
     expect(trend.averageOverRecommendedCount).toBe(0);
   });
+
+  it("builds chronological chart points from the latest timed mock results", () => {
+    const trend = buildMockTimingTrend([
+      makeResult("latest", [makeAnswer("q1", 100, 90)]),
+      makeResult("previous", [makeAnswer("q1", 80, 90)]),
+      makeResult("older", [makeAnswer("q1", 60, 90)]),
+      makeResult("oldest", [makeAnswer("q1", 40, 90)]),
+    ]);
+
+    expect(trend.chartPoints.map((point) => point.resultId)).toEqual([
+      "oldest",
+      "older",
+      "previous",
+      "latest",
+    ]);
+    expect(trend.chartPoints.map((point) => point.averageElapsedSeconds)).toEqual([
+      40,
+      60,
+      80,
+      100,
+    ]);
+  });
 });
 
 function makeResult(id: string, answers: MockExamAnswer[]): MockExamResult {

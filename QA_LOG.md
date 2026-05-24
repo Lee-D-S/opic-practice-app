@@ -11,6 +11,26 @@
 
 ## 2026-05-25
 
+### 기록 화면 장기 시간 추이 차트 정적 검증
+
+#### 범위
+
+- 최근 최대 6회 모의고사 시간 기록을 시간순 chart point로 생성
+- Q1 warm-up 제외 유지
+- 기록 화면에 평균 답변 시간, 권장 시간 초과 문항, 짧은 답변 막대 표시
+- 시간 기록이 없는 모의고사는 차트에서 제외
+
+#### 결과
+
+- `rtk npm test`: Pass, 10 files / 27 tests
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not covered: 실제 브라우저에서 여러 모의고사 기록이 있는 상태의 차트 폭과 모바일 표시를 수동 확인해야 한다.
+
 ### 질문은행 세부 서베이 항목 확장 정적 검증
 
 #### 범위

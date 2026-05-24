@@ -717,6 +717,88 @@ button:disabled {
   padding: 6px 10px;
 }
 
+.timing-chart {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+}
+
+.timing-chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.timing-chart-legend span {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 12px;
+  gap: 6px;
+}
+
+.timing-chart-legend span::before {
+  border-radius: 999px;
+  content: "";
+  height: 8px;
+  width: 18px;
+}
+
+.timing-chart-legend .average::before,
+.timing-bar.average {
+  background: #2563eb;
+}
+
+.timing-chart-legend .over::before,
+.timing-bar.over {
+  background: #dc2626;
+}
+
+.timing-chart-legend .short::before,
+.timing-bar.short {
+  background: #d97706;
+}
+
+.timing-chart-row {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 54px minmax(0, 1fr);
+}
+
+.timing-chart-label {
+  color: var(--muted);
+  font-size: 12px;
+  padding-top: 3px;
+}
+
+.timing-chart-bars {
+  display: grid;
+  gap: 7px;
+}
+
+.timing-bar-line {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(44px, 1fr) auto;
+  min-height: 18px;
+}
+
+.timing-bar-line > span:last-child {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.timing-bar {
+  border-radius: 999px;
+  display: block;
+  height: 9px;
+  min-width: 12px;
+}
+
 .weakness-list {
   display: grid;
   gap: 10px;
