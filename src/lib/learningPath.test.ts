@@ -73,6 +73,20 @@ describe("recommendLearningPathStep", () => {
 
     expect(recommendation.stepId).toBe("weakness_review");
   });
+  it("prioritizes repeated specific-example weakness over a single recent short answer", () => {
+    const recommendation = recommendLearningPathStep({
+      answerMaterials: [material()],
+      attempts: [
+        attempt(["구체적인 예시가 더 필요합니다."], 35),
+        attempt(["경험을 더 구체적으로 말해 주세요."], 95),
+      ],
+      mockResults: [],
+      progress: progress(["orientation", "answer_materials"]),
+    });
+
+    expect(recommendation.stepId).toBe("weakness_review");
+    expect(recommendation.reasonKo).toContain("반복");
+  });
 });
 
 function progress(completedStepIds: LearningPathProgress["completedStepIds"]) {

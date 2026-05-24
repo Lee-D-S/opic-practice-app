@@ -5,6 +5,10 @@ import type {
   MockExamResult,
   PracticeAttempt,
 } from "./types";
+import {
+  analyzeWeaknessInsights,
+  getTopRepeatedWeakness,
+} from "./weaknessInsights";
 
 export type LearningPathRecommendation = {
   stepId: LearningPathStepId;
@@ -33,6 +37,24 @@ export function recommendLearningPathStep({
     return {
       stepId: "answer_materials",
       reasonKo: "선택 주제에 대해 말할 이야기, 이유, 예시가 아직 저장되지 않았습니다.",
+    };
+  }
+
+  const repeatedWeakness = getTopRepeatedWeakness(
+    analyzeWeaknessInsights({ attempts, mockResults }),
+  );
+
+  if (repeatedWeakness) {
+    if (repeatedWeakness.category === "roleplay") {
+      return {
+        stepId: "roleplay_focus",
+        reasonKo: `${repeatedWeakness.labelKo} 약점이 ${repeatedWeakness.count}회 반복되었습니다. 역할극 집중 훈련에서 요청, 문제 설명, 대안 제시를 먼저 보완하세요.`,
+      };
+    }
+
+    return {
+      stepId: "weakness_review",
+      reasonKo: `${repeatedWeakness.labelKo} 약점이 ${repeatedWeakness.count}회 반복되었습니다. 최근 1회 기록보다 반복 패턴을 우선해 약점 복습을 추천합니다.`,
     };
   }
 

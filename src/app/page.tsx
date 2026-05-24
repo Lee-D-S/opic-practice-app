@@ -53,6 +53,7 @@ import {
   buildMockTimingTrend,
   summarizeMockTiming,
 } from "@/lib/mockTiming";
+import { analyzeWeaknessInsights } from "@/lib/weaknessInsights";
 
 type View = "home" | "path" | "setup" | "practice" | "mock" | "history";
 type PracticeStep = "ready" | "first" | "feedback" | "second" | "comparison";
@@ -1901,6 +1902,7 @@ function HistoryView({
   mockResults: MockExamResult[];
 }) {
   const timingTrend = buildMockTimingTrend(mockResults);
+  const weaknessInsights = analyzeWeaknessInsights({ attempts, mockResults });
 
   return (
     <section className="panel">
@@ -1942,6 +1944,25 @@ function HistoryView({
               ? ` 직전 모의고사 평균은 ${formatOptionalSeconds(timingTrend.previous.averageElapsedSeconds)}였습니다.`
               : ""}
           </p>
+        )}
+      </article>
+      <article className="card history-timing">
+        <div>
+          <h3>반복 약점</h3>
+          <p className="muted">최근 개별 연습과 모의고사 피드백에서 반복된 약점입니다.</p>
+        </div>
+        {weaknessInsights.length === 0 ? (
+          <div className="empty compact">아직 반복 약점을 계산할 기록이 부족합니다.</div>
+        ) : (
+          <div className="weakness-list">
+            {weaknessInsights.slice(0, 4).map((insight) => (
+              <div className="weakness-item" key={insight.category}>
+                <strong>{insight.labelKo}</strong>
+                <span>{insight.count}회</span>
+                <p>{insight.reasonKo}</p>
+              </div>
+            ))}
+          </div>
         )}
       </article>
       {attempts.length === 0 ? (

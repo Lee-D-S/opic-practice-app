@@ -717,6 +717,32 @@ button:disabled {
   padding: 6px 10px;
 }
 
+.weakness-list {
+  display: grid;
+  gap: 10px;
+}
+
+.weakness-item {
+  background: #f8fafc;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 12px;
+}
+
+.weakness-item span {
+  color: var(--primary-strong);
+  font-weight: 700;
+}
+
+.weakness-item p {
+  color: var(--muted);
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
 @media (max-width: 980px) {
   .app-frame,
   .practice-layout,
