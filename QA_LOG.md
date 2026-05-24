@@ -11,6 +11,28 @@
 
 ## 2026-05-24
 
+### Background Survey 정적 검증
+
+#### 범위
+
+- Background Survey 4파트 구조
+- Part 4 총 12개 이상 선택 안내
+- Self Assessment 6단계 선택과 앱 목표 등급 매핑
+- 문제 다시 듣기 1회 제한
+- 기존 `surveyTags` 저장값과 새 `backgroundSurvey` 저장값 호환
+- 추천 질문/모의고사 입력값 유지
+
+#### 결과
+
+- `rtk npm test`: Pass, 6 files / 16 tests
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not covered: 실제 브라우저에서 Background Survey 선택 UI와 저장 상태를 수동 확인해야 한다.
+
 ### 학습 기록 기반 추천 정적 검증
 
 #### 범위
@@ -122,7 +144,7 @@
 - 개별 연습 질문 텍스트 기본 숨김
 - 모의고사 질문 텍스트 기본 숨김
 - 브라우저 음성 합성 질문 재생
-- 모의고사 문항당 질문 듣기 2회 제한
+- 모의고사 문항당 질문 다시 듣기 1회 제한
 - 관련 문서 동기화
 
 #### 결과
