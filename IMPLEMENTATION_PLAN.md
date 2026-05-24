@@ -75,7 +75,7 @@
 | 로컬 기록/분석 | 45% | 진행 중 | 개별 연습과 모의고사 결과가 저장된다. 약점 집계와 추이 화면이 필요하다. |
 | 코치 대시보드 | 45% | 진행 중 | 홈이 추천 연습과 기본 지표를 보여준다. 기록 기반 추천이 필요하다. |
 | 학습 경로 | 80% | 진행 중 | 단계 목록, 진행률 모델, 진단 세트 진입, 답변 재료 저장, 기존 연습/모의고사/기록 연결, 기본 기록 기반 추천이 동작한다. 반복 약점 집계와 장기 추천 고도화가 필요하다. |
-| 테스트/QA | 72% | 진행 중 | 빌드, lint, Vitest storage/mock report/API fallback 테스트, 유스케이스/테스트케이스/수동 QA 체크리스트가 있다. UI 상호작용 테스트가 필요하다. |
+| 테스트/QA | 78% | 진행 중 | 빌드, lint, Vitest storage/mock report/API fallback 테스트와 DS Interviewer UI 상호작용 테스트가 있다. 추가 브라우저 수동 QA와 더 넓은 UI 테스트가 필요하다. |
 | 문서 동기화 | 70% | 진행 중 | 제품 스펙, 구현 계획, 가이드 문서들이 있으며 기능 후 갱신 규칙이 있다. |
 
 ## 갱신 규칙
@@ -144,12 +144,13 @@ MVP는 사용자가 다음을 할 수 있을 때 완료로 본다.
 - 2026-05-24: feedback/compare/mock-report API route fallback 테스트 추가. Gemini 실패 시 `provider=local`과 local fallback 응답을 검증한다. `rtk npm test`, `rtk npm run build`, `rtk npm run lint` 통과(기존 모의고사 타이머 effect dependency warning 1건 남음)
 - 2026-05-24: 모의고사 문항별 소요 시간을 리포트 분석에 반영. local report와 Gemini prompt에 시간 정보를 추가하고 UI에 시간 사용 섹션을 표시한다. `rtk npm test`, `rtk npm run build`, `rtk npm run lint` 통과(기존 모의고사 타이머 effect dependency warning 1건 남음)
 - 2026-05-24: 학습 기록 기반 학습 경로 추천 구현. 답변 재료 저장 여부, 최근 답변 길이, 역할극 약점, 모의고사 기록, 시간 사용 피드백으로 다음 단계를 추천하고 이유를 표시한다. `rtk npm test`, `rtk npm run build`, `rtk npm run lint` 통과(기존 모의고사 타이머 effect dependency warning 1건 남음)
+- 2026-05-25: DS Interviewer UI 상호작용 테스트 추가. 개별 연습 질문 텍스트 기본 숨김/공개, 질문 듣기 음성 합성 호출, 모의고사 질문 듣기 1회 제한과 텍스트 공개를 Vitest/Testing Library로 검증한다. `rtk npm test` 통과(7 files / 18 tests)
 
 ## 다음 작업
 
-1. DS Interviewer 질문 UI 상호작용 테스트 추가
-2. 기록 화면에 시간 사용 추이 표시
-3. 반복 약점 집계 기반 추천 고도화
+1. 기록 화면에 시간 사용 추이 표시
+2. 반복 약점 집계 기반 추천 고도화
+3. 질문은행 세부 서베이 항목별 문항 확장
 
 ## 우선순위 근거
 
