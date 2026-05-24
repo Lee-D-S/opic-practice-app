@@ -125,6 +125,12 @@
 - UI에 `Local fallback`이 표시된다.
 - 앱은 계속 사용할 수 있다.
 
+자동화 범위:
+
+- feedback API route는 Gemini 실패 시 `provider: "local"`을 반환한다.
+- compare API route는 Gemini 실패 시 local comparison을 반환한다.
+- mock-report API route는 Gemini 실패 시 local report를 반환하고 Q1 warm-up을 제외한다.
+
 ## TC-08 모의고사 Q1 비채점
 
 시나리오: 학습자가 전체 모의고사를 완료한다.

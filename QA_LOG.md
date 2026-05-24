@@ -11,6 +11,26 @@
 
 ## 2026-05-24
 
+### API route fallback 테스트 정적 검증
+
+#### 범위
+
+- feedback API route Gemini 실패 fallback
+- compare API route Gemini 실패 fallback
+- mock-report API route Gemini 실패 fallback
+- Vitest alias configuration
+
+#### 결과
+
+- `rtk npm test`: Pass, 5 files / 10 tests
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Not covered: DS Interviewer UI 버튼 동작과 브라우저 음성 합성은 아직 자동화 테스트가 없다.
+
 ### 자동화 테스트 도입 정적 검증
 
 #### 범위
