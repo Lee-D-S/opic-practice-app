@@ -388,6 +388,93 @@ button:disabled {
   font-weight: 400;
 }
 
+.survey-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.survey-form label {
+  display: grid;
+  gap: 6px;
+}
+
+.survey-form span,
+.survey-section strong {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.survey-form select {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 40px;
+  padding: 8px 10px;
+  width: 100%;
+}
+
+.survey-sections {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.survey-section {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 10px;
+  padding-top: 12px;
+}
+
+.survey-section:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.survey-section p {
+  margin-top: 4px;
+}
+
+.survey-options {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.survey-option {
+  align-items: start;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 28px minmax(0, 1fr);
+  padding: 10px;
+  text-align: left;
+}
+
+.survey-option strong {
+  align-items: center;
+  background: var(--surface-strong);
+  border-radius: 999px;
+  display: flex;
+  height: 28px;
+  justify-content: center;
+}
+
+.survey-option.selected {
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.survey-option.selected strong {
+  background: var(--primary);
+  color: #fff;
+}
+
 .practice-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;

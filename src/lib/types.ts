@@ -23,6 +23,43 @@ export type SurveyTag =
   | "technology"
   | "health";
 
+export type WorkField =
+  | "business"
+  | "home_business"
+  | "teacher"
+  | "no_work_experience";
+
+export type WorkStatus = "working" | "not_working";
+
+export type SchoolStatus = "student" | "not_student";
+
+export type CourseExperience =
+  | "degree_course"
+  | "professional_development"
+  | "language_class"
+  | "over_five_years";
+
+export type ResidenceType =
+  | "alone"
+  | "non_family"
+  | "family"
+  | "dormitory"
+  | "military_barracks";
+
+export type BackgroundSurvey = {
+  workField: WorkField;
+  workStatus: WorkStatus;
+  schoolStatus: SchoolStatus;
+  courseExperience: CourseExperience;
+  residence: ResidenceType;
+  leisureIds: string[];
+  hobbyIds: string[];
+  sportIds: string[];
+  travelIds: string[];
+  selfAssessmentLevel: 1 | 2 | 3 | 4 | 5 | 6;
+  selectedTags: SurveyTag[];
+};
+
 export type Question = {
   id: string;
   level: OPIcLevel;
@@ -42,6 +79,7 @@ export type Question = {
 export type AppSettings = {
   targetLevel: OPIcLevel;
   surveyTags: SurveyTag[];
+  backgroundSurvey: BackgroundSurvey;
 };
 
 export type LearningPathStepId =
@@ -134,6 +172,19 @@ export type MockExamResult = {
 export const defaultSettings: AppSettings = {
   targetLevel: "IM2",
   surveyTags: ["movie", "travel", "food"],
+  backgroundSurvey: {
+    workField: "no_work_experience",
+    workStatus: "not_working",
+    schoolStatus: "not_student",
+    courseExperience: "over_five_years",
+    residence: "family",
+    leisureIds: ["movies", "parks", "home_improvement"],
+    hobbyIds: ["listening_music", "cooking", "pets"],
+    sportIds: ["walking", "jogging", "fitness"],
+    travelIds: ["domestic_travel", "staycation", "overseas_travel"],
+    selfAssessmentLevel: 4,
+    selectedTags: ["movie", "travel", "food"],
+  },
 };
 
 export const defaultLearningPathProgress: LearningPathProgress = {

@@ -27,7 +27,20 @@ export function loadSettings(): AppSettings {
   }
 
   try {
-    return { ...defaultSettings, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw) as Partial<AppSettings>;
+    const selectedTags = parsed.backgroundSurvey?.selectedTags ?? parsed.surveyTags;
+
+    return {
+      ...defaultSettings,
+      ...parsed,
+      surveyTags: parsed.surveyTags ?? selectedTags ?? defaultSettings.surveyTags,
+      backgroundSurvey: {
+        ...defaultSettings.backgroundSurvey,
+        ...parsed.backgroundSurvey,
+        selectedTags:
+          selectedTags ?? defaultSettings.backgroundSurvey.selectedTags,
+      },
+    };
   } catch {
     return defaultSettings;
   }

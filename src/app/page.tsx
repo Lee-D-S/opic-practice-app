@@ -1,13 +1,18 @@
-"use client";
+﻿"use client";
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import {
   buildMockExamQuestions,
+  backgroundSurveySections,
+  courseExperienceOptions,
   levelDescriptions,
   questions,
   recommendQuestion,
-  surveyOptions,
+  residenceOptions,
+  schoolStatusOptions,
+  selfAssessmentOptions,
+  workFieldOptions,
 } from "@/lib/questions";
 import { recommendLearningPathStep } from "@/lib/learningPath";
 import {
@@ -809,13 +814,81 @@ function SetupView({
   settings: AppSettings;
   onChange: (settings: AppSettings) => void;
 }) {
-  function toggleTag(tag: SurveyTag) {
-    const exists = settings.surveyTags.includes(tag);
+  const selectedSurveyItemCount = backgroundSurveySections.reduce(
+    (total, section) => total + settings.backgroundSurvey[section.optionKey].length,
+    0,
+  );
+
+  function getSurveyTags(backgroundSurvey: AppSettings["backgroundSurvey"]) {
+    const tags = new Set<SurveyTag>();
+
+    if (backgroundSurvey.workStatus === "working" || backgroundSurvey.workField !== "no_work_experience") {
+      tags.add("work");
+    }
+
+    if (backgroundSurvey.schoolStatus === "student") {
+      tags.add("school");
+    }
+
+    tags.add("home");
+
+    for (const section of backgroundSurveySections) {
+      const selectedIds = backgroundSurvey[section.optionKey];
+      for (const option of section.options) {
+        if (option.tag && selectedIds.includes(option.id)) {
+          tags.add(option.tag);
+        }
+      }
+    }
+
+    return Array.from(tags);
+  }
+
+  function updateBackgroundSurvey(partial: Partial<AppSettings["backgroundSurvey"]>) {
+    const backgroundSurvey = {
+      ...settings.backgroundSurvey,
+      ...partial,
+    };
+    const surveyTags = getSurveyTags(backgroundSurvey);
+
     onChange({
       ...settings,
-      surveyTags: exists
-        ? settings.surveyTags.filter((item) => item !== tag)
-        : [...settings.surveyTags, tag],
+      surveyTags,
+      backgroundSurvey: {
+        ...backgroundSurvey,
+        selectedTags: surveyTags,
+      },
+    });
+  }
+
+  function toggleSurveyChoice(
+    optionKey: "leisureIds" | "hobbyIds" | "sportIds" | "travelIds",
+    id: string,
+  ) {
+    const currentIds = settings.backgroundSurvey[optionKey];
+    updateBackgroundSurvey({
+      [optionKey]: currentIds.includes(id)
+        ? currentIds.filter((item) => item !== id)
+        : [...currentIds, id],
+    });
+  }
+
+  function updateSelfAssessment(level: 1 | 2 | 3 | 4 | 5 | 6) {
+    const targetLevel = level <= 2 ? "IM1" : level <= 4 ? "IM2" : level === 5 ? "IH" : "AL";
+    const backgroundSurvey = {
+      ...settings.backgroundSurvey,
+      selfAssessmentLevel: level,
+    };
+    const surveyTags = getSurveyTags(backgroundSurvey);
+
+    onChange({
+      ...settings,
+      targetLevel,
+      surveyTags,
+      backgroundSurvey: {
+        ...backgroundSurvey,
+        selectedTags: surveyTags,
+      },
     });
   }
 
@@ -823,14 +896,14 @@ function SetupView({
     <section className="panel">
       <div className="section-head">
         <div>
-          <h2>연습 목표 등급과 학습용 Background Survey</h2>
-          <p className="muted">질문 추천과 모의고사 구성을 위한 앱 설정입니다. 공식 OPIc form 선택 화면이 아닙니다.</p>
+          <h2>Background Survey</h2>
+          <p className="muted">질문을 읽고 정확히 답변해 주세요. 설문 응답을 기초로 개인별 연습 문항이 출제됩니다.</p>
         </div>
       </div>
 
       <div className="grid">
         <article className="card">
-          <h3>연습 목표 등급</h3>
+          <h3>Practice target level</h3>
           <div className="chips" style={{ marginTop: 12 }}>
             {levels.map((level) => (
               <button
@@ -848,26 +921,150 @@ function SetupView({
         </article>
 
         <article className="card">
-          <h3>학습용 서베이 주제</h3>
+          <h3>Part 1 of 4</h3>
           <p className="muted" style={{ marginTop: 8 }}>
-            집/직장/학교는 ACTFL 공개 설명의 broad category에 맞춘 항목이고, 나머지는 개인 활동/관심사 연습을 위한 앱 practice topic입니다.
+            현재 귀하는 어느 분야에 종사하고 계십니까?
           </p>
-          <div className="chips" style={{ marginTop: 12 }}>
-            {surveyOptions.map((option) => (
-              <button
-                className={`chip ${settings.surveyTags.includes(option.tag) ? "selected" : ""}`}
-                key={option.tag}
-                onClick={() => toggleTag(option.tag)}
-                title={
-                  option.basis === "official-broad"
-                    ? "공식 공개 설명의 broad category 기반"
-                    : "개인 활동/관심사 연습을 위한 앱 practice topic"
+          <div className="survey-form">
+            <label>
+              <span>분야</span>
+              <select
+                onChange={(event) =>
+                  updateBackgroundSurvey({
+                    workField: event.target.value as AppSettings["backgroundSurvey"]["workField"],
+                  })
                 }
+                value={settings.backgroundSurvey.workField}
               >
-                {option.label}
-                <span className="chip-meta">
-                  {option.basis === "official-broad" ? "공개범주" : "연습주제"}
-                </span>
+                {workFieldOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </article>
+
+        <article className="card">
+          <h3>Part 2 of 4</h3>
+          <div className="survey-form">
+            <label>
+              <span>현재 당신은 학생입니까?</span>
+              <select
+                onChange={(event) =>
+                  updateBackgroundSurvey({
+                    schoolStatus: event.target.value as AppSettings["backgroundSurvey"]["schoolStatus"],
+                  })
+                }
+                value={settings.backgroundSurvey.schoolStatus}
+              >
+                {schoolStatusOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              <span>최근 어떤 강의를 수강했습니까?</span>
+              <select
+                onChange={(event) =>
+                  updateBackgroundSurvey({
+                    courseExperience: event.target.value as AppSettings["backgroundSurvey"]["courseExperience"],
+                  })
+                }
+                value={settings.backgroundSurvey.courseExperience}
+              >
+                {courseExperienceOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </article>
+
+        <article className="card">
+          <h3>Part 3 of 4</h3>
+          <div className="survey-form">
+            <label>
+              <span>현재 귀하는 어디에 살고 계십니까?</span>
+              <select
+                onChange={(event) =>
+                  updateBackgroundSurvey({
+                    residence: event.target.value as AppSettings["backgroundSurvey"]["residence"],
+                  })
+                }
+                value={settings.backgroundSurvey.residence}
+              >
+                {residenceOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </article>
+
+
+        <article className="card">
+          <h3>Part 4 of 4</h3>
+          <p className="muted" style={{ marginTop: 8 }}>
+            아래의 설문에서 총 12개 이상의 항목을 선택하십시오. {selectedSurveyItemCount}개 항목을 선택했습니다.
+          </p>
+          <div className="survey-sections">
+            {backgroundSurveySections.map((section) => (
+              <div className="survey-section" key={section.id}>
+                <div>
+                  <strong>{section.title}</strong>
+                  <p className="muted">{section.prompt}</p>
+                </div>
+                <div className="chips">
+                  {section.options.map((option) => (
+                    <button
+                      className={`chip ${
+                        settings.backgroundSurvey[section.optionKey].includes(option.id)
+                          ? "selected"
+                          : ""
+                      }`}
+                      key={option.id}
+                      onClick={() => toggleSurveyChoice(section.optionKey, option.id)}
+                      title={option.tag ? `질문 추천 태그: ${option.tag}` : "세부 설문 항목"}
+                    >
+                      {option.label}
+                      {option.tag && <span className="chip-meta">{option.tag}</span>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          {selectedSurveyItemCount < 12 && (
+            <p className="input-error">실제 흐름에 맞추려면 12개 이상 선택하는 연습을 권장합니다.</p>
+          )}
+        </article>
+
+        <article className="card">
+          <h3>Self Assessment</h3>
+          <p className="muted">
+            본 Self Assessment에 대한 응답을 기초로 개인별 문항이 출제됩니다. 본인의 English 말하기 능력과 비슷한 수준을 선택하세요.
+          </p>
+          <div className="survey-options">
+            {selfAssessmentOptions.map((option) => (
+              <button
+                className={`survey-option ${
+                  settings.backgroundSurvey.selfAssessmentLevel === option.value
+                    ? "selected"
+                    : ""
+                }`}
+                key={option.value}
+                onClick={() => updateSelfAssessment(option.value)}
+              >
+                <strong>{option.value}</strong>
+                <span>{option.label}</span>
               </button>
             ))}
           </div>
@@ -1339,6 +1536,8 @@ function MockView({
 
     setCurrentIndex(currentIndex + 1);
     setQuestionElapsedSeconds(0);
+    setIsPromptVisible(false);
+    setPromptListenCount(0);
   }
 
   function appendCurrentAnswer(
@@ -1371,6 +1570,8 @@ function MockView({
 
     setCurrentIndex(currentIndex + 1);
     setQuestionElapsedSeconds(0);
+    setIsPromptVisible(false);
+    setPromptListenCount(0);
   }
 
   async function endExamNow() {
@@ -1448,8 +1649,8 @@ function MockView({
   }
 
   function playMockPrompt() {
-    if (promptListenCount >= 2) {
-      setError("모의고사에서는 질문 듣기를 최대 2회까지 사용할 수 있습니다.");
+    if (promptListenCount >= 1) {
+      setError("모의고사에서는 문제 다시 듣기를 1회만 사용할 수 있습니다.");
       return;
     }
 
@@ -1540,7 +1741,7 @@ function MockView({
               isPromptVisible={isPromptVisible}
               isSpeaking={isPromptSpeaking}
               listenCount={promptListenCount}
-              maxListens={2}
+              maxListens={1}
               mode="mock"
               onPlay={playMockPrompt}
               onShowPrompt={() => setIsPromptVisible(true)}

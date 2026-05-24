@@ -19,6 +19,7 @@ import type {
   MockExamResult,
   PracticeAttempt,
 } from "./types";
+import { defaultSettings } from "./types";
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -35,8 +36,15 @@ describe("settings storage", () => {
 
   it("saves and loads settings", () => {
     const settings: AppSettings = {
+      ...defaultSettings,
       targetLevel: "IH",
       surveyTags: ["work", "technology"],
+      backgroundSurvey: {
+        ...defaultSettings.backgroundSurvey,
+        workField: "business",
+        workStatus: "working",
+        selectedTags: ["work", "technology"],
+      },
     };
 
     saveSettings(settings);

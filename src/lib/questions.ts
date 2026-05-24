@@ -1,4 +1,13 @@
-import type { OPIcLevel, Question, SurveyTag } from "./types";
+import type {
+  OPIcLevel,
+  Question,
+  CourseExperience,
+  ResidenceType,
+  SchoolStatus,
+  SurveyTag,
+  WorkField,
+  WorkStatus,
+} from "./types";
 
 export const surveyOptions: {
   tag: SurveyTag;
@@ -16,6 +25,120 @@ export const surveyOptions: {
   { tag: "shopping", label: "쇼핑", basis: "app-practice" },
   { tag: "technology", label: "기술", basis: "app-practice" },
   { tag: "health", label: "건강", basis: "app-practice" },
+];
+
+export const workFieldOptions: { value: WorkField; label: string }[] = [
+  { value: "business", label: "Business / Corporation" },
+  { value: "home_business", label: "Home Business" },
+  { value: "teacher", label: "Teacher / Educator" },
+  { value: "no_work_experience", label: "No work experience" },
+];
+
+export const workStatusOptions: { value: WorkStatus; label: string }[] = [
+  { value: "working", label: "Yes" },
+  { value: "not_working", label: "No" },
+];
+
+export const schoolStatusOptions: { value: SchoolStatus; label: string }[] = [
+  { value: "student", label: "Yes" },
+  { value: "not_student", label: "No" },
+];
+
+export const courseExperienceOptions: { value: CourseExperience; label: string }[] = [
+  { value: "degree_course", label: "학위 과정 수업" },
+  { value: "professional_development", label: "전문 기술 향상을 위한 평생 학습" },
+  { value: "language_class", label: "어학수업" },
+  { value: "over_five_years", label: "수강 후 5년 이상 지남" },
+];
+
+export const residenceOptions: { value: ResidenceType; label: string }[] = [
+  { value: "alone", label: "개인주택이나 아파트에 홀로 거주" },
+  { value: "non_family", label: "친구나 룸메이트와 함께 주택이나 아파트에 거주" },
+  { value: "family", label: "가족과 함께 주택이나 아파트에 거주" },
+  { value: "dormitory", label: "학교 기숙사" },
+  { value: "military_barracks", label: "군대 막사" },
+];
+
+export const backgroundSurveySections: {
+  id: string;
+  title: string;
+  prompt: string;
+  minimum: number;
+  optionKey: "leisureIds" | "hobbyIds" | "sportIds" | "travelIds";
+  options: { id: string; label: string; tag?: SurveyTag }[];
+}[] = [
+  {
+    id: "leisure",
+    title: "여가 활동",
+    prompt: "귀하는 여가 활동으로 주로 무엇을 하십니까? (두 개 이상 선택)",
+    minimum: 2,
+    optionKey: "leisureIds",
+    options: [
+      { id: "movies", label: "영화보기", tag: "movie" },
+      { id: "clubs", label: "클럽/나이트클럽 가기" },
+      { id: "performances", label: "공연보기", tag: "music" },
+      { id: "concerts", label: "콘서트보기", tag: "music" },
+      { id: "museums", label: "박물관가기" },
+      { id: "parks", label: "공원가기", tag: "health" },
+      { id: "camping", label: "캠핑하기", tag: "travel" },
+      { id: "beach", label: "해변가기", tag: "travel" },
+      { id: "watching_sports", label: "스포츠 관람", tag: "exercise" },
+      { id: "home_improvement", label: "주거 개선", tag: "home" },
+    ],
+  },
+  {
+    id: "hobbies",
+    title: "취미와 관심사",
+    prompt: "귀하의 취미나 관심사는 무엇입니까? (한 개 이상 선택)",
+    minimum: 1,
+    optionKey: "hobbyIds",
+    options: [
+      { id: "reading_children", label: "아이에게 책 읽어주기" },
+      { id: "listening_music", label: "음악 감상하기", tag: "music" },
+      { id: "instruments", label: "악기 연주하기", tag: "music" },
+      { id: "singing", label: "혼자 노래부르거나 합창하기", tag: "music" },
+      { id: "dancing", label: "춤추기", tag: "exercise" },
+      { id: "writing", label: "글쓰기(편지, 단문, 시 등)" },
+      { id: "drawing", label: "그림 그리기" },
+      { id: "cooking", label: "요리하기", tag: "food" },
+      { id: "pets", label: "애완동물 기르기", tag: "home" },
+    ],
+  },
+  {
+    id: "sports",
+    title: "운동",
+    prompt: "귀하는 주로 어떤 운동을 즐기십니까? (한 개 이상 선택)",
+    minimum: 1,
+    optionKey: "sportIds",
+    options: [
+      "농구", "야구/소프트볼", "축구", "미식축구", "하키", "크리켓", "골프", "배구", "테니스", "배드민턴", "탁구", "수영", "자전거", "스키/스노우보드", "아이스 스케이트", "조깅", "걷기", "요가", "하이킹/트레킹", "낚시", "헬스",
+    ].map((label) => ({ id: label, label, tag: "exercise" as SurveyTag })).concat([
+      { id: "no_exercise", label: "운동을 전혀 하지 않음", tag: "health" },
+    ]),
+  },
+  {
+    id: "travel",
+    title: "휴가와 출장",
+    prompt: "귀하는 어떤 휴가나 출장을 다녀온 경험이 있습니까? (한 개 이상 선택)",
+    minimum: 1,
+    optionKey: "travelIds",
+    options: [
+      { id: "domestic_business", label: "국내출장", tag: "work" },
+      { id: "overseas_business", label: "해외출장", tag: "work" },
+      { id: "staycation", label: "집에서 보내는 휴가", tag: "home" },
+      { id: "domestic_travel", label: "국내 여행", tag: "travel" },
+      { id: "overseas_travel", label: "해외 여행", tag: "travel" },
+    ],
+  },
+];
+
+export const selfAssessmentOptions: { value: 1 | 2 | 3 | 4 | 5 | 6; label: string }[] = [
+  { value: 1, label: "나는 10단어 이하의 단어로 말할 수 있습니다." },
+  { value: 2, label: "나는 기본적인 물건, 색깔, 요일, 음식, 의류, 숫자 등을 말할 수 있습니다. 완벽한 문장을 항상 구사하지는 못합니다." },
+  { value: 3, label: "나는 나 자신, 직장, 친숙한 사람과 장소, 일상에 대한 기본적인 정보를 간단한 문장으로 전달할 수 있습니다." },
+  { value: 4, label: "나는 나 자신, 일상, 일/학교, 취미에 대해 간단한 대화를 할 수 있고 필요한 것을 얻기 위한 질문도 할 수 있습니다." },
+  { value: 5, label: "나는 친숙한 주제와 가정, 일/학교, 개인 및 사회적 관심사에 대해 연결된 문장으로 말할 수 있습니다." },
+  { value: 6, label: "나는 일/학교, 개인적인 관심사, 시사 문제에 대한 대화나 토론에 자신 있게 참여할 수 있습니다." },
 ];
 
 export const levelDescriptions: Record<OPIcLevel, string> = {
