@@ -84,6 +84,7 @@ export async function generateGeminiMockReport(input: {
     strengthsKo: arrayOrEmpty(parsed.strengthsKo),
     weaknessesKo: arrayOrEmpty(parsed.weaknessesKo),
     recommendedPracticeKo: arrayOrEmpty(parsed.recommendedPracticeKo),
+    timingKo: arrayOrEmpty(parsed.timingKo),
     estimatedLevel: normalizeLevel(parsed.estimatedLevel, input.targetLevel),
   };
 }
@@ -228,6 +229,8 @@ function buildMockReportPrompt({
 Rated Q${index + 2}. ${answer.prompt}
 Answer: ${answer.transcript || "(empty answer)"}
 Words: ${answer.metrics.wordCount}
+Recommended answer time: ${answer.metrics.answerSeconds} seconds
+Actual time spent: ${answer.elapsedSeconds ?? "unknown"} seconds
 `.trim(),
     )
     .join("\n\n");
@@ -244,6 +247,7 @@ Return only valid JSON with this exact shape:
   "strengthsKo": ["Korean strength 1", "Korean strength 2", "Korean strength 3"],
   "weaknessesKo": ["Korean weakness 1", "Korean weakness 2", "Korean weakness 3"],
   "recommendedPracticeKo": ["Korean practice recommendation 1", "Korean practice recommendation 2", "Korean practice recommendation 3"],
+  "timingKo": ["Korean timing feedback 1", "Korean timing feedback 2"],
   "estimatedLevel": "IM1 | IM2 | IH | AL"
 }
 
@@ -253,6 +257,8 @@ Rules:
 - Treat estimatedLevel as an advisory training estimate only, not an official OPIc score.
 - OPIc assessment is holistic; do not present isolated point scores.
 - Do not use the warm-up response to lower or raise the advisory estimated level.
+- Use elapsed time and recommended answer time to comment on pacing in timingKo.
+- If elapsed time is unknown, say timing analysis is limited.
 - Be direct but practical.
 - Keep Korean concise.
 - estimatedLevel must be one of IM1, IM2, IH, AL.

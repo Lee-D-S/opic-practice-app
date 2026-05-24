@@ -117,6 +117,7 @@ export type MockExamReport = {
   strengthsKo: string[];
   weaknessesKo: string[];
   recommendedPracticeKo: string[];
+  timingKo?: string[];
   estimatedLevel: OPIcLevel;
 };
 

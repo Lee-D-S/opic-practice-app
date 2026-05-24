@@ -1641,6 +1641,16 @@ function MockView({
               </ul>
             </article>
           </div>
+          {report.timingKo && report.timingKo.length > 0 && (
+            <article className="card">
+              <h3>시간 사용</h3>
+              <ul className="list">
+                {report.timingKo.map((item) => (
+                  <li key={item}>{item}</li>
+                ))}
+              </ul>
+            </article>
+          )}
           <article className="card">
             <h3>추천 복습</h3>
             <ul className="list">
