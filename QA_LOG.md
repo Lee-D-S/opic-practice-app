@@ -11,6 +11,26 @@
 
 ## 2026-05-25
 
+### 질문은행 세부 서베이 항목 확장 정적 검증
+
+#### 범위
+
+- 세부 Background Survey 항목 ID를 문항 데이터에 연결
+- 선택한 세부 항목 문항을 broad tag 문항보다 우선 추천
+- 공원, 캠핑, 요리, 걷기, staycation, 콘서트, 주거 개선, 국내/해외 여행, 반려동물 전용 문항 존재
+- 개별 연습 질문 텍스트 숨김/공개 테스트 기대값 갱신
+
+#### 결과
+
+- `rtk npm test`: Pass, 10 files / 26 tests
+- `rtk npm run build`: Pass
+- `rtk npm run lint`: Pass with warning
+
+#### 발견 이슈
+
+- Open: `src/app/page.tsx`의 기존 모의고사 타이머 `useEffect`에 `react-hooks/exhaustive-deps` warning 1건이 남아 있다.
+- Open: 실제 브라우저에서 서베이 항목 변경 후 추천 질문이 즉시 세부 항목 중심으로 바뀌는지 수동 확인이 필요하다.
+
 ### 반복 약점 집계 정적 검증
 
 #### 범위

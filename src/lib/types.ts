@@ -66,6 +66,7 @@ export type Question = {
   type: QuestionType;
   topic: string;
   surveyTags: SurveyTag[];
+  sourceSurveyIds?: string[];
   prompt: string;
   followUpGroupId?: string;
   difficulty: 1 | 2 | 3 | 4;

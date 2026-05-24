@@ -6,6 +6,7 @@ import {
   buildMockExamQuestions,
   backgroundSurveySections,
   courseExperienceOptions,
+  getSelectedBackgroundSurveyItemIds,
   levelDescriptions,
   questions,
   recommendQuestion,
@@ -191,6 +192,7 @@ export default function Home() {
         storedSettings.targetLevel,
         storedSettings.surveyTags,
         storedAttempts.map((attempt) => attempt.questionId),
+        getSelectedBackgroundSurveyItemIds(storedSettings.backgroundSurvey),
       ),
     );
   }, []);
@@ -206,6 +208,7 @@ export default function Home() {
         settings.targetLevel,
         settings.surveyTags,
         completedQuestionIds,
+        getSelectedBackgroundSurveyItemIds(settings.backgroundSurvey),
       ),
     [completedQuestionIds, settings],
   );

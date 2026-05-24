@@ -248,6 +248,7 @@ MVP에서는 오디오 파일을 장기 저장하지 않는다.
 - `type`
 - `topic`
 - `surveyTags`
+- `sourceSurveyIds` 선택 필드: 세부 Background Survey 항목 기반 문항일 때 선택 항목 ID를 기록한다.
 - `prompt`
 - `followUpGroupId`
 - `difficulty`
@@ -269,6 +270,8 @@ MVP에서는 오디오 파일을 장기 저장하지 않는다.
 - 돌발 주제
 
 모의고사는 완전 랜덤이 아니라 주제 클러스터를 사용한다.
+
+개별 연습 추천은 broad `surveyTags`뿐 아니라 `sourceSurveyIds`가 선택한 세부 Background Survey 항목과 맞는 문항을 우선 사용할 수 있다. 현재 질문은행은 공원, 캠핑, 요리, 걷기, 집에서 보내는 휴가, 콘서트, 주거 개선, 국내/해외 여행, 반려동물 항목의 첫 전용 문항 배치를 포함한다.
 
 질문은행 확장 규칙은 `QUESTION_BANK_GUIDE.md`에서 관리한다.
 

@@ -259,6 +259,12 @@
 - 화면은 공식 시험 UI 복제가 아니라 학습용 Background Survey임을 설명한다.
 - 모의고사 패턴은 simulation pattern으로 표시된다.
 
+자동화 범위:
+
+- 선택된 세부 Background Survey 항목 ID를 추천 로직 입력으로 수집한다.
+- 전용 `sourceSurveyIds`가 있는 문항은 broad tag 문항보다 먼저 추천된다.
+- 공원, 캠핑, 요리, 걷기, staycation, 콘서트, 주거 개선, 국내/해외 여행, 반려동물 항목은 전용 연습 문항을 가진다.
+
 ## TC-14 로컬 저장
 
 시나리오: 학습자가 새로고침 후 돌아온다.

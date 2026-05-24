@@ -59,7 +59,7 @@ describe("DS Interviewer prompt UI", () => {
     fireEvent.click(screen.getByRole("button", { name: "질문 텍스트 보기" }));
 
     expect(
-      screen.getByText(/Tell me about a memorable trip you took recently/i),
+      screen.getByText(/Tell me about how you usually spend time at parks/i),
     ).toBeTruthy();
   });
 
