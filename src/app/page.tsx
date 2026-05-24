@@ -9,6 +9,7 @@ import {
   recommendQuestion,
   surveyOptions,
 } from "@/lib/questions";
+import { recommendLearningPathStep } from "@/lib/learningPath";
 import {
   loadAnswerMaterials,
   loadAttempts,
@@ -436,8 +437,10 @@ export default function Home() {
         <div className="main">
           {view === "home" && (
             <HomeView
+              answerMaterials={answerMaterials}
               attempts={attempts}
               learningPathProgress={learningPathProgress}
+              mockResults={mockResults}
               question={recommendedQuestion}
               settings={settings}
               onPath={() => setView("path")}
@@ -507,8 +510,10 @@ export default function Home() {
 }
 
 function HomeView({
+  answerMaterials,
   attempts,
   learningPathProgress,
+  mockResults,
   question,
   settings,
   onPath,
@@ -516,8 +521,10 @@ function HomeView({
   onSetup,
   onMock,
 }: {
+  answerMaterials: AnswerMaterial[];
   attempts: PracticeAttempt[];
   learningPathProgress: LearningPathProgress;
+  mockResults: MockExamResult[];
   question: Question;
   settings: AppSettings;
   onPath: () => void;
@@ -528,7 +535,13 @@ function HomeView({
   const latestWeakness =
     attempts[0]?.feedback.improvementsKo[0] ?? "첫 답변에서는 구체적인 경험 하나를 말하는 데 집중하세요.";
   const pathCompletion = getLearningPathCompletion(learningPathProgress);
-  const nextPathStep = getNextLearningPathStep(learningPathProgress);
+  const recommendation = recommendLearningPathStep({
+    answerMaterials,
+    attempts,
+    mockResults,
+    progress: learningPathProgress,
+  });
+  const nextPathStep = getLearningPathStep(recommendation.stepId);
 
   return (
     <section className="panel">
@@ -606,7 +619,13 @@ function LearningPathView({
   settings: AppSettings;
 }) {
   const completion = getLearningPathCompletion(learningPathProgress);
-  const nextStep = getNextLearningPathStep(learningPathProgress);
+  const recommendation = recommendLearningPathStep({
+    answerMaterials,
+    attempts,
+    mockResults,
+    progress: learningPathProgress,
+  });
+  const nextStep = getLearningPathStep(recommendation.stepId);
   const latestWeakness =
     attempts[0]?.feedback.improvementsKo[0] ??
     mockResults[0]?.report.weaknessesKo[0] ??
@@ -632,6 +651,7 @@ function LearningPathView({
           <h3>다음 추천 단계</h3>
           <p>{nextStep.title}</p>
           <p className="muted" style={{ marginTop: 8 }}>{nextStep.description}</p>
+          <p className="recommendation-reason">{recommendation.reasonKo}</p>
           <div className="button-row" style={{ marginTop: 14 }}>
             <button className="primary" onClick={() => onAction(nextStep.action)}>시작</button>
             <button className="secondary" onClick={() => onToggle(nextStep.id)}>완료 표시</button>
@@ -1738,9 +1758,9 @@ function getLearningPathCompletion(progress: LearningPathProgress) {
   };
 }
 
-function getNextLearningPathStep(progress: LearningPathProgress) {
+function getLearningPathStep(stepId: LearningPathStepId) {
   return (
-    learningPathSteps.find((step) => !progress.completedStepIds.includes(step.id)) ??
+    learningPathSteps.find((step) => step.id === stepId) ??
     learningPathSteps[learningPathSteps.length - 1]
   );
 }
